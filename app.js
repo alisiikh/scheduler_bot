@@ -20,7 +20,8 @@ botService.on('personalMessage', (bot, data) => {
     bot.reply(`Hey ${data.from}. Thank you for your message: "${data.content}".`, true);
 });
 
-const port = process.env.OPENSHIFT_NODEJS_PORT || 80;
+const port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
+// const ipAddress = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
 
 const server = restify.createServer();
 server.post('/v1/chat', skype.messagingHandler(botService));
