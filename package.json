@@ -1,12 +1,20 @@
 {
-  "name": "openshift-cartridge-nodejs-template",
-  "version": "1.0.1",
-  "description": "Custom Node.js cartridge for OpenShift - sample application",
-  "private": true,
-  "main": "start.js",
+  "name": "flowfact-skype-bot",
+  "version": "1.0.0",
+  "description": "FlowFact Skype Bot",
+  "main": "index.js",
   "scripts": {
-    "start": "node --use_strict start.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Ionut-Cristian Florescu <ionut.florescu@gmail.com>",
-  "license": "ISC"
+  "keywords": [
+    "flowfact",
+    "skype",
+    "bot"
+  ],
+  "author": "Aleksey Lisiikh",
+  "license": "MIT",
+  "dependencies": {
+    "restify": "^4.1.1",
+    "skype-sdk": "file:skype-sdk.tar.gz"
+  }
 }
