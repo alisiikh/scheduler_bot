@@ -20,8 +20,9 @@ botService.on('personalMessage', (bot, data) => {
     bot.reply(`Hey ${data.from}. Thank you for your message: "${data.content}".`, true);
 });
 
+const port = process.env.OPENSHIFT_NODEJS_PORT || 80;
+
 const server = restify.createServer();
 server.post('/v1/chat', skype.messagingHandler(botService));
-const port = process.env.PORT || 8080;
 server.listen(port);
 console.log('Listening for incoming requests on port ' + port);
