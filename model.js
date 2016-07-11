@@ -10,8 +10,4 @@ var skypeAddressSchema = new Schema({
 		dateCreated: Date 
 	});
 
-skypeAddressSchema.statics.findBySkypeId = function(skypeId, cb) {
-	return this.find({ "skypeId": skypeId });
-};
-
 module.exports.SkypeAddress = mongoose.model('SkypeAddress', skypeAddressSchema);

@@ -20,9 +20,9 @@ botService.on('contactAdded', function(bot, data) {
     var skypeId = data.from;
     var displayName = data.displayName;
 
-    SkypeAddress.findBySkypeId({ "skypeId": data.from }, function(err, skypeAddresses) {
+    SkypeAddress.find({ "skypeId": skypeId }, function(err, skypeAddresses) {
         if (err) {
-            console.error("Failed to execute findBySkypeId()");
+            console.error("Failed to execute findBySkypeId(). Reason: " + err);
             return;
         }
 
