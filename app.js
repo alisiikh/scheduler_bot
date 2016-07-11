@@ -1,72 +1,41 @@
 var restify = require('restify');
 var skype = require('skype-sdk');
-var mongoose = require('mongoose');
-var server = require('./server');
+var botService = require('./skype-bot-service');
 var agenda = require('./agenda');
 
-var SkypeAddress = require('./model').SkypeAddress;
+var port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
+var ipAddress = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
 
-var botService = new skype.BotService({
-    messaging: {
-        botId: 'dd76f065-6693-471a-a996-cd74cb71c207',
-        serverUrl : "https://apis.skype.com",
-        requestTimeout : 15000,
-        appId: process.env.APP_ID || "dd76f065-6693-471a-a996-cd74cb71c207",
-        appSecret: process.env.APP_SECRET || "ATxiZN1nDYkdWzpQAO9wbxW"
-    }
-});
-
-botService.on('contactAdded', function(bot, data) {
-    var skypeId = data.from;
-    var displayName = data.displayName;
-
-    SkypeAddress.find({ "skypeId": skypeId }, function(err, skypeAddresses) {
-        if (err) {
-            console.error("Failed to execute findBySkypeId(). Reason: " + err);
-            return;
-        }
-
-        if (skypeAddresses.length != 0) {
-            bot.reply("I already have contact with name " + skypeId 
-                + ", so I will remind you when time comes"); 
-
-            agenda.on('ready', function() {
-                agenda.schedule('in 1 minute', 'notify skype contact', { "skypeId": skypeId, "bot": bot });
-                agenda.start();
-            });
-            return;
-        }
-
-        var skypeAddress = new SkypeAddress({ 
-            "skypeId": skypeId, 
-            "displayName": displayName,
-            "dateCreated": new Date()
-        });
-
-        skypeAddress.save(function(err) {
-            if (!err) {
-                console.log("Stored new skype contact with a name: " + skypeId);
-            }
-        });
-
-        bot.reply("Hello, " + displayName + "! I've stored you to my " 
-            + "database so that you will not miss my notifications. \n" 
-            + "Data received: \n" + JSON.stringify(data), true);
-
-        agenda.on('ready', function() {
-            agenda.schedule('in 1 minute', 'notify skype contact', { "skypeId": skypeId, "bot": bot });
-            agenda.start();
-        });
-    });
-});
-
-botService.on('personalMessage', function(bot, data) {
-    bot.reply(JSON.stringify(data), true);
-
-    agenda.on('ready', function() {
-        agenda.schedule('in 1 minute', 'notify skype contact', { "skypeId": data.from, "bot": bot });
-        agenda.start();
-    });
-});
-
+var server = restify.createServer();
+server.use(restify.acceptParser(server.acceptable));
+server.use(restify.bodyParser({ mapParams: true }));
 server.post('/v1/chat', skype.messagingHandler(botService));
+server.post('/retro', function(req, res, next) {
+    var content = req.params.content;
+    var reminderDate = req.params.reminderDate;
+
+    agenda.cancel({ name: 'send notifications' }, function(err, numRemoved) {
+        if (err) {
+            console.error("Failed to remove 'send notification' jobs");
+        } else {
+            console.log("Removed " + numRemoved + " 'send notification' jobs");
+
+            agenda.schedule(reminderDate, 'send notifications', { "content": content });
+
+            console.log("Scheduled new retro reminder job");
+        }
+    });
+
+    var body = "Retro reminder has been scheduled " + reminderDate + " with content:\n" + content;
+    res.writeHead(200, {
+        'Content-Length': body.length,
+        'Content-Type': 'text/plain'
+    });
+    res.write(body);
+    res.end();
+});
+server.listen(port, ipAddress, function() {
+   console.log('Server is listening for incoming requests on port %s', server.url);
+});
+
+module.exports = server;

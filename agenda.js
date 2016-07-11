@@ -1,14 +1,39 @@
 var Agenda = require('agenda');
 var mongoUrl = require('./db').mongoUrl;
+var botService = require('./skype-bot-service');
+var SkypeAddress = require('./model').SkypeAddress;
 
-var agenda = new Agenda({db: {address: mongoUrl}});
+console.log(botService);
 
-agenda.define('notify skype contact', function(job, done) {
+var agenda = new Agenda({ db: { address: mongoUrl }, processEvery: '30 seconds' });
+agenda.define('send notifications', function(job, done) {
+	console.log("Send notifications job is fired!");
+
 	var jobData = job.attrs.data;
-	var skypeAddress = jobData.skypeAddress;
-	var bot = jobData.bot;
+	var content = jobData.content;
 
-	bot.reply("Delayed message from bot for " + skypeAddress, true);
+	console.log("Send notifications job is fired! Content: " + content);
+
+	SkypeAddress.find({}, function(err, addresses) {
+		if (err) {
+			console.error("Error during fetching skype addresses!", err);
+			return;
+		}
+
+		console.log("Found " + addresses.length + " addresses, sending notifications");
+
+		addresses.forEach(function(address) {
+			console.log("SkypeId: " + address.skypeId);
+			botService.send(address.skypeId, content);
+		});
+
+		done();
+	});
+});
+
+agenda.on('ready', function() {
+	console.log("Agenda successfully started");	
+	agenda.start();
 });
 
 module.exports = agenda;

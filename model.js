@@ -5,7 +5,7 @@ var Schema = mongoose.Schema;
 mongoose.connect(mongoUrl);
 
 var skypeAddressSchema = new Schema({ 
-		skypeId: String,
+		skypeId: { type: String, index: { unique: true } },
 		displayName: String,
 		dateCreated: Date 
 	});
