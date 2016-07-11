@@ -35,6 +35,11 @@ botService.on('contactAdded', function(bot, data) {
 
 botService.on('personalMessage', function(bot, data) {
     bot.reply(JSON.stringify(data), true);
+
+    agenda.on('ready', function() {
+        agenda.schedule('in 1 minute', 'notify skype contact', { "skypeId": data.from, "bot": bot });
+    });
+    agenda.start();
 });
 
 server.post('/v1/chat', skype.messagingHandler(botService));
