@@ -15,7 +15,10 @@
   "author": "Aleksey Lisiikh",
   "license": "MIT",
   "dependencies": {
+    "agenda": "^0.8.1",
+    "mongodb": "^2.2.1",
+    "mongoose": "^4.5.3",
     "restify": "^4.1.1",
-    "skype-sdk": "file:skype-sdk.tar.gz"
+    "skype-sdk": "file:lib/skype-sdk.tar.gz"
   }
 }

@@ -1,6 +1,10 @@
-var fs = require('fs');
 var restify = require('restify');
 var skype = require('skype-sdk');
+var mongoose = require('mongoose');
+var server = require('./server');
+var agenda = require('./agenda');
+
+var SkypeAddress = require('./model').SkypeAddress;
 
 var botService = new skype.BotService({
     messaging: {
@@ -13,18 +17,24 @@ var botService = new skype.BotService({
 });
 
 botService.on('contactAdded', function(bot, data) {
-    bot.reply('Hello ' + data.fromDisplayName + '! I\'m FlowFact Skype bot :)', true);
+    var skypeAddress = new SkypeAddress({ 
+        "skypeId": data.from, 
+        "displayName": data.fromDisplayName,
+        "dateCreated": new Date()
+    });
+    skypeAddress.save(function(err) {
+        if (!err) {
+           console.log("Stored new skype contact with a name: " + data.from);
+        }
+    });
+
+    bot.reply("Hello, " + data.fromDisplayName + "! I've stored you to my " 
+        + "database so that you will not miss my notifications. \n" 
+        + "Data received: \n" + JSON.stringify(data));
 });
 
 botService.on('personalMessage', function(bot, data) {
-    bot.reply('Hey ' + data.from + '. Thank you for your message: "' + data.content + '".', true);
+    bot.reply(JSON.stringify(data), true);
 });
 
-var port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
-var ipAddress = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
-
-var server = restify.createServer();
 server.post('/v1/chat', skype.messagingHandler(botService));
-server.listen(port, ipAddress, function() {
-	console.log('%s, listening for incoming requests on port %s', server.name, server.url);
-});
