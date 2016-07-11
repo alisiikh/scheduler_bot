@@ -30,7 +30,10 @@ botService.on('contactAdded', function(bot, data) {
             bot.reply("I already have contact with name " + skypeId 
                 + ", so I will remind you when time comes"); 
 
-            bot.reply("Reply true", true);
+            agenda.on('ready', function() {
+                agenda.schedule('in 1 minute', 'notify skype contact', { "skypeId": skypeId, "bot": bot });
+                agenda.start();
+            });
             return;
         }
 
@@ -48,7 +51,7 @@ botService.on('contactAdded', function(bot, data) {
 
         bot.reply("Hello, " + displayName + "! I've stored you to my " 
             + "database so that you will not miss my notifications. \n" 
-            + "Data received: \n" + JSON.stringify(data));
+            + "Data received: \n" + JSON.stringify(data), true);
 
         agenda.on('ready', function() {
             agenda.schedule('in 1 minute', 'notify skype contact', { "skypeId": skypeId, "bot": bot });
