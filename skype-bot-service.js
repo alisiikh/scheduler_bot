@@ -44,7 +44,9 @@ botService.on('contactAdded', function(bot, data) {
 });
 
 botService.on('personalMessage', function(bot, data) {
-    bot.reply("You can send me a POST request to ", true);
+    bot.reply("Mr. " + data.fromDisplayName + ", you can send me a POST request to /retro and JSON containing" 
+    	+ " reminderDate key with human interval and content with data\n" 
+    	+ " Further I plan to add command parsing instead of using CURL :)", true);
 });
 
 module.exports = botService;
