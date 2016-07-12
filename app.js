@@ -3,6 +3,7 @@ var skype = require('skype-sdk');
 var botService = require('./skype-bot-service');
 var agenda = require('./agenda');
 var SkypeAddress = require('./model');
+var humanInterval = require('human-interval');
 
 var port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
 var ipAddress = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
@@ -68,19 +69,25 @@ botService.on('contactAdded', function(bot, data) {
             }
         });
 
-        bot.reply("Hello, FlowFacter! I'm your reminder sender to any contact I'm added to! :)");
+        bot.reply("Hello, FlowFacter! \nI'm your reminder sender to any contact I'm added to! \n\n" 
+            + "For any suggestions please contact 8:lizard5472 :)", true);
     });
 });
 
 botService.on('personalMessage', function(bot, data) {
     var command = data.content;
     if (command.startsWith('Edited')) {
+        console.log("User edited previous message, no need to spam!");
         return;
     }
 
     function onError() {
         var replyErrorMessage = "Command is incorrect, please see examples below:\n\n";
-        replyErrorMessage += "Example Usages: \n\nschedule | 1 minute | Retro was brilliant!";
+        replyErrorMessage += "Example Usages: \n\nschedule | in 1 minute | Retro was brilliant!";
+        replyErrorMessage += "schedule | in 30 seconds | Message \ncan \nbe multiline (wait)\n\n";
+        replyErrorMessage += "schedule | now | throw new UnsupportedOperationException( (facepalm) );";
+        replyErrorMessage += "schedule | in 10 days | or in ten days!\n\n";
+        replyErrorMessage += "\nIf you have any questions on time parameter ask Aleksey! (punch)"
         bot.reply(replyErrorMessage, true);
     }
 
@@ -92,7 +99,7 @@ botService.on('personalMessage', function(bot, data) {
         }
 
         var commandName = parsedCommand[0].trim();
-        var humanInterval = parsedCommand[1].trim();
+        var reminderInterval = parsedCommand[1].trim();
         var content = parsedCommand[2].trim();
 
         if (commandName != 'schedule') {
@@ -107,13 +114,18 @@ botService.on('personalMessage', function(bot, data) {
 
     console.log("Scheduling notification to be sent with content:\n\n" + content);
     try {
-        agenda.schedule(humanInterval, 'sendNotifications', { "content": content });
+        agenda.schedule(reminderInterval, 'sendNotifications', { "content": content });
     } catch (e) {
         console.error("Failed to schedule notification", e);
         bot.reply("Error occurred during scheduling reminder", true);
         return;
     }
     
-    var replyMessage = "Scheduled new reminder job";
+    var currentMillis = new Date().getTime();
+    var scheduledOnDate = new Date(currentMillis + humanInterval(reminderInterval));
+
+    var replyMessage = "Scheduled new reminder job on " 
+       + scheduledOnDate.toLocaleDateString('en-US') + " " 
+       + scheduledOnDate.toLocaleTimeString('en-US') + "\n\nHope it's correct time (whew)";
     bot.reply(replyMessage, true);
 });
