@@ -23,7 +23,7 @@ agenda.define('sendNotifications', function(job, done) {
 			try {
 			   var message = "Kapusta! Please pay attention to the following lines!\n\n";
 			   message += content;
-			   message += "\n\nThanks for your time " + address.displayName + "! (movember)";
+			   message += "\n\nThanks for your time, " + address.displayName + "! (movember)";
 
 			   botService.send(address.skypeId, message);
 		    } catch (e) {
