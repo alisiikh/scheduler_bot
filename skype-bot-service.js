@@ -1,4 +1,5 @@
 var skype = require('skype-sdk');
+var humanInterval = require('human-interval');
 var SkypeAddress = require('./model').SkypeAddress;
 
 var botService = new skype.BotService({
@@ -6,8 +7,8 @@ var botService = new skype.BotService({
         botId: 'dd76f065-6693-471a-a996-cd74cb71c207',
         serverUrl : "https://apis.skype.com",
         requestTimeout : 15000,
-        appId: process.env.APP_ID || "dd76f065-6693-471a-a996-cd74cb71c207",
-        appSecret: process.env.APP_SECRET || "ATxiZN1nDYkdWzpQAO9wbxW"
+        appId: process.env.SKYPE_APP_ID || "dd76f065-6693-471a-a996-cd74cb71c207",
+        appSecret: process.env.SKYPE_APP_SECRET || "ATxiZN1nDYkdWzpQAO9wbxW"
     }
 });
 
@@ -44,9 +45,46 @@ botService.on('contactAdded', function(bot, data) {
 });
 
 botService.on('personalMessage', function(bot, data) {
-    bot.reply("Mr. " + data.fromDisplayName + ", you can send me a POST request to /retro and JSON containing" 
-    	+ " reminderDate key with human interval and content with data\n" 
-    	+ " Further I plan to add command parsing instead of using CURL :)", true);
+    var command = data.content;
+    var parsedCommand = command.split('|', 2);
+
+    function onError() {
+        bot.reply("Example Usages: \n\nschedule | 1 minute | Retro was brilliant!\n");
+    }
+
+    if (parsedCommand.length != 3) {
+        onError();
+        return;
+    }
+
+    var commandName = parsedCommand[0];
+    var humanInterval = parsedCommand[1];
+    var content = parsedCommand[2];
+
+    if (commandName !== 'schedule') {
+        onError();
+        return;
+    }
+
+
+    agenda.cancel({ name: 'send notifications' }, function(err, numRemoved) {
+        if (err) {
+            console.error("Failed to remove 'send notification' jobs");
+
+            bot.reply("Excuse me, Mr. Cat, I've failed to remove stale jobs, please contact Mr. Aleksey!\n\nBest regards, \nFlowFact BOT", true);
+        } else {
+            var replyMessage = "Mr. " + data.fromDisplayName + ", thank you for scheduling a reminder job!\n\n";
+
+            replyMessage += "Removed " + numRemoved + " stale reminder jobs.\n";
+
+            agenda.schedule(humanInterval, 'send notifications', { "content": content });
+
+            replyMessage += "Scheduled new retro reminder job.\n\n";
+            replyMessage += "Will be fired at X date";
+
+            bot.reply(replyMessage, true);
+        }
+    });
 });
 
 module.exports = botService;
