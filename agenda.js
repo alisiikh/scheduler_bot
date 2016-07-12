@@ -8,7 +8,7 @@ agenda.define('sendNotifications', function(job, done) {
 	var jobData = job.attrs.data;
 	var content = jobData.content;
 
-	console.log("Send notifications job is fired! Content: " + content);
+	console.log("Send notifications job is fired!\nContent:\n" + content);
 
 	SkypeAddress.find({}, function(err, addresses) {
 		if (err) {
@@ -21,7 +21,7 @@ agenda.define('sendNotifications', function(job, done) {
 		addresses.forEach(function(address) {
 			console.log("Sending notification to skype contact " + address.skypeId);
 			try {
-			   var message = "Kapusta! Please pay attention to the following lines!\n\n";
+			   var message = "Kapusta! Please pay attention to the following lines:\n\n";
 			   message += content;
 			   message += "\n\nThanks for your time, " + address.displayName + "! (movember)";
 

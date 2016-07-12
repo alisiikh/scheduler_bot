@@ -125,8 +125,12 @@ botService.on('personalMessage', function(bot, data) {
     var scheduledOnDate = new Date();
     scheduledOnDate.setTime(new Date().getTime() + humanInterval(reminderInterval));
 
+    console.log(new Date().getTime());
+    console.log(humanInterval(reminderInterval));
+    console.log(scheduledOnDate);
+
     var replyMessage = "Scheduled new reminder job on " 
-       + scheduledOnDate.toLocaleDateString('en-US') + " " 
-       + scheduledOnDate.toLocaleTimeString('en-US') + "\nHope it's correct time (whew)";
+       + scheduledOnDate.toLocaleDateString() + " " 
+       + scheduledOnDate.toLocaleTimeString() + "\nHope it's correct time (whew)";
     bot.reply(replyMessage, true);
 });
