@@ -46,22 +46,32 @@ botService.on('contactAdded', function(bot, data) {
 
 botService.on('personalMessage', function(bot, data) {
     var command = data.content;
-    var parsedCommand = command.split('|', 2);
+    
 
     function onError() {
-        bot.reply("Example Usages: \n\nschedule | 1 minute | Retro was brilliant!\n");
+        var replyErrorMessage = "Command is incorrect, please see examples below:\n\n";
+        replyErrorMessage += "Example Usages: \n\nschedule | 1 minute | Retro was brilliant!";
+        bot.reply(replyErrorMessage, true);
     }
 
-    if (parsedCommand.length != 3) {
-        onError();
-        return;
-    }
+    try {
+        var parsedCommand = command.split('|', 2);
+        if (parsedCommand.length != 3) {
+            throw new Error("Incorrect command: " + parsedCommand);
+            onError();
+            return;
+        }
 
-    var commandName = parsedCommand[0];
-    var humanInterval = parsedCommand[1];
-    var content = parsedCommand[2];
+        var commandName = parsedCommand[0].trim();
+        var humanInterval = parsedCommand[1].trim();
+        var content = parsedCommand[2].trim();
 
-    if (commandName !== 'schedule') {
+        if (commandName != 'schedule') {
+            throw new Error("Incorrect command name, was: " + commandName);
+            return;
+        }
+    } catch (e) {
+        console.error("Failed to parse bot command", e);
         onError();
         return;
     }
