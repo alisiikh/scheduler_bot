@@ -7,8 +7,6 @@ console.log(botService);
 
 var agenda = new Agenda({ db: { address: mongoUrl }, processEvery: '30 seconds' });
 agenda.define('send notifications', function(job, done) {
-	console.log("Send notifications job is fired!");
-
 	var jobData = job.attrs.data;
 	var content = jobData.content;
 
@@ -24,7 +22,12 @@ agenda.define('send notifications', function(job, done) {
 
 		addresses.forEach(function(address) {
 			console.log("SkypeId: " + address.skypeId);
-			botService.send(address.skypeId, content);
+			try {
+			   botService.send(address.skypeId, content);
+		    } catch (e) {
+               console.error("Failed to send reminder to skypeId: " + skypeId, e);
+               return;
+		    }
 		});
 
 		done();
