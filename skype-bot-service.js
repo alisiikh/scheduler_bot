@@ -76,8 +76,16 @@ botService.on('personalMessage', function(bot, data) {
         return;
     }
 
+    var replyMessage = "Mr. " + data.fromDisplayName + ", thank you for scheduling a reminder job!\n\n";
+    agenda.schedule(humanInterval, 'send notifications', { "content": content });
 
-    agenda.cancel({ name: 'send notifications' }, function(err, numRemoved) {
+    replyMessage += "Scheduled new retro reminder job.\n\n";
+    replyMessage += "Will be fired at X date";
+
+    bot.reply(replyMessage, true);
+
+
+/*    agenda.cancel({ name: 'send notifications' }, function(err, numRemoved) {
         if (err) {
             console.error("Failed to remove 'send notification' jobs");
 
@@ -94,7 +102,7 @@ botService.on('personalMessage', function(bot, data) {
 
             bot.reply(replyMessage, true);
         }
-    });
+    });*/
 });
 
 module.exports = botService;
