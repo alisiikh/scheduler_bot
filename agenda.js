@@ -25,7 +25,7 @@ agenda.define('send notifications', function(job, done) {
 			try {
 			   botService.send(address.skypeId, content);
 		    } catch (e) {
-               console.error("Failed to send reminder to skypeId: " + skypeId, e);
+               console.error("Failed to send reminder to skypeId: " + address.skypeId, e);
                return;
 		    }
 		});
