@@ -76,6 +76,7 @@ botService.on('personalMessage', function(bot, data) {
         return;
     }
 
+    console.log("Scheduling notification to be sent with content:\n\n" + content);
     var replyMessage = "Mr. " + data.fromDisplayName + ", thank you for scheduling a reminder job!\n\n";
     agenda.schedule(humanInterval, 'send notifications', { "content": content });
 
