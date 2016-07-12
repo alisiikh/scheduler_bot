@@ -55,7 +55,7 @@ botService.on('personalMessage', function(bot, data) {
     }
 
     try {
-        var parsedCommand = command.split('|', 2);
+        var parsedCommand = command.split('|', 3);
         if (parsedCommand.length != 3) {
             throw new Error("Incorrect command: " + parsedCommand);
             onError();
