@@ -46,7 +46,9 @@ botService.on('contactAdded', function(bot, data) {
 
 botService.on('personalMessage', function(bot, data) {
     var command = data.content;
-    
+    if (command.startsWith('Edited')) {
+        return;
+    }
 
     function onError() {
         var replyErrorMessage = "Command is incorrect, please see examples below:\n\n";
@@ -58,7 +60,6 @@ botService.on('personalMessage', function(bot, data) {
         var parsedCommand = command.split('|', 3);
         if (parsedCommand.length != 3) {
             throw new Error("Incorrect command: " + parsedCommand);
-            onError();
             return;
         }
 
@@ -77,9 +78,15 @@ botService.on('personalMessage', function(bot, data) {
     }
 
     console.log("Scheduling notification to be sent with content:\n\n" + content);
+    try {
+        agenda.schedule(humanInterval, 'send notifications', { "content": content });
+    } catch (e) {
+        console.error("Failed to schedule notification", e);
+        bot.reply("Error occurred during scheduling reminder", true);
+        return;
+    }
+    
     var replyMessage = "Mr. " + data.fromDisplayName + ", thank you for scheduling a reminder job!\n\n";
-    agenda.schedule(humanInterval, 'send notifications', { "content": content });
-
     replyMessage += "Scheduled new retro reminder job.\n\n";
     replyMessage += "Will be fired at X date";
 
