@@ -3,8 +3,6 @@ var mongoUrl = require('./db').mongoUrl;
 var botService = require('./skype-bot-service');
 var SkypeAddress = require('./model').SkypeAddress;
 
-console.log(botService);
-
 var agenda = new Agenda({ db: { address: mongoUrl }, processEvery: '30 seconds' });
 agenda.define('send notifications', function(job, done) {
 	var jobData = job.attrs.data;
@@ -35,7 +33,7 @@ agenda.define('send notifications', function(job, done) {
 });
 
 agenda.on('ready', function() {
-	console.log("Agenda successfully started");	
+	console.log("Agenda successfully started and ready to receive job requests.");	
 	agenda.start();
 });
 
