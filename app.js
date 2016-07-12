@@ -84,11 +84,11 @@ botService.on('personalMessage', function(bot, data) {
     function onError() {
         var replyErrorMessage = "Command is incorrect, please see examples below:\n\n";
         replyErrorMessage += "Example Usages:\n\n";
-        replyErrorMessage += "schedule | in 1 minute   | Retro was brilliant!\n";
+        replyErrorMessage += "schedule | in 1 minute | Retro was brilliant!\n";
         replyErrorMessage += "schedule | in 30 seconds | Message can be multiline as well (wait)\n";
-        replyErrorMessage += "schedule | now           | throw new UnsupportedOperationException( (facepalm) );\n";
-        replyErrorMessage += "schedule | in 10 days    | or in ten days!\n\n";
-        replyErrorMessage += "\nIf you have any questions on time parameter ask Aleksey! (punch)"
+        replyErrorMessage += "schedule | now | throw new UnsupportedOperationException( (facepalm) );\n";
+        replyErrorMessage += "schedule | in 10 days | or in ten days!\n\n";
+        replyErrorMessage += "\nIf you have any questions on time parameter, please ask Aleksey! (punch)";
         bot.reply(replyErrorMessage, true);
     }
 
