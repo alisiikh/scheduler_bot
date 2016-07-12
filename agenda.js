@@ -21,8 +21,10 @@ agenda.define('sendNotifications', function(job, done) {
 		addresses.forEach(function(address) {
 			console.log("Sending notification to skype contact " + address.skypeId);
 			try {
-			   var message = "Kapusta! Please pay attention to the following lines:\n\n";
+			   var message = "I have a very important note for you!:\n\n";
+			   message += "==============================\n";
 			   message += content;
+			   message += "==============================\n";
 			   message += "\n\nThanks for your time, " + address.displayName + "! (movember)";
 
 			   botService.send(address.skypeId, message);
