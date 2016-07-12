@@ -1,4 +1,5 @@
 var skype = require('skype-sdk');
+var agenda = require('./agenda');
 var humanInterval = require('human-interval');
 var SkypeAddress = require('./model').SkypeAddress;
 
