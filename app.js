@@ -122,11 +122,11 @@ botService.on('personalMessage', function(bot, data) {
         return;
     }
     
-    var currentMillis = new Date().getTime();
-    var scheduledOnDate = new Date(currentMillis + humanInterval(reminderInterval));
+    var scheduledOnDate = new Date();
+    scheduledOnDate.setTime(new Date().getTime() + humanInterval(reminderInterval));
 
     var replyMessage = "Scheduled new reminder job on " 
        + scheduledOnDate.toLocaleDateString('en-US') + " " 
-       + scheduledOnDate.toLocaleTimeString('en-US') + "\n\nHope it's correct time (whew)";
+       + scheduledOnDate.toLocaleTimeString('en-US') + "\nHope it's correct time (whew)";
     bot.reply(replyMessage, true);
 });
