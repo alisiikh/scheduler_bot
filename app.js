@@ -87,7 +87,7 @@ botService.on('personalMessage', function(bot, data) {
         replyErrorMessage += "schedule | in 1 minute | Retro was brilliant!\n";
         replyErrorMessage += "schedule | in 30 seconds | Message can be multiline as well (wait)\n";
         replyErrorMessage += "schedule | now | throw new UnsupportedOperationException( (facepalm) );\n";
-        replyErrorMessage += "schedule | in 10 days | or in ten days!\n\n";
+        replyErrorMessage += "schedule | in 10 days | or in ten days!\n";
         replyErrorMessage += "\nIf you have any questions on time parameter, please ask Aleksey! (punch)";
         bot.reply(replyErrorMessage, true);
     }
