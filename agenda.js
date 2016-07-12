@@ -25,7 +25,7 @@ agenda.define('sendNotifications', function(job, done) {
 			   message += "==============================\n";
 			   message += content;
 			   message += "\n==============================\n";
-			   message += "\n\nThanks for your time, " + address.displayName + "! (movember)";
+			   message += "\nThanks for your time, " + address.displayName + "! (movember)";
 
 			   botService.send(address.skypeId, message);
 		    } catch (e) {
