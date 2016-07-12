@@ -4,7 +4,7 @@ var botService = require('./skype-bot-service');
 var SkypeAddress = require('./model').SkypeAddress;
 
 var agenda = new Agenda({ db: { address: mongoUrl }, processEvery: '30 seconds' });
-agenda.define('send notifications', function(job, done) {
+agenda.define('sendNotifications', function(job, done) {
 	var jobData = job.attrs.data;
 	var content = jobData.content;
 
@@ -16,14 +16,18 @@ agenda.define('send notifications', function(job, done) {
 			return;
 		}
 
-		console.log("Found " + addresses.length + " addresses, sending notifications");
+		console.log("Found " + addresses.length + " addresses, sending notifications to all of them!");
 
 		addresses.forEach(function(address) {
-			console.log("SkypeId: " + address.skypeId);
+			console.log("Sending notification to skype contact " + address.skypeId);
 			try {
-			   botService.send(address.skypeId, content);
+			   var message = "Kapusta! Please pay attention to the following lines!\n\n";
+			   message += content;
+			   message += "\n\nThanks for your time " + address.displayName + "! (movember)";
+
+			   botService.send(address.skypeId, message);
 		    } catch (e) {
-               console.error("Failed to send reminder to skypeId: " + address.skypeId, e);
+               console.error("Failed to send reminder to skype contact " + address.skypeId, e);
                return;
 		    }
 		});

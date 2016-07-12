@@ -2,6 +2,7 @@ var restify = require('restify');
 var skype = require('skype-sdk');
 var botService = require('./skype-bot-service');
 var agenda = require('./agenda');
+var SkypeAddress = require('./model');
 
 var port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
 var ipAddress = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
@@ -14,13 +15,13 @@ server.post('/retro', function(req, res, next) {
     var content = req.params.content;
     var reminderDate = req.params.reminderDate;
 
-    agenda.cancel({ name: 'send notifications' }, function(err, numRemoved) {
+    agenda.cancel({ name: 'sendNotifications' }, function(err, numRemoved) {
         if (err) {
             console.error("Failed to remove 'send notification' jobs");
         } else {
             console.log("Removed " + numRemoved + " 'send notification' jobs");
 
-            agenda.schedule(reminderDate, 'send notifications', { "content": content });
+            agenda.schedule(reminderDate, 'sendNotifications', { "content": content });
 
             console.log("Scheduled new retro reminder job");
         }
@@ -38,19 +39,18 @@ server.listen(port, ipAddress, function() {
    console.log('Server is listening for incoming requests on port %s', server.url);
 });
 
-
 botService.on('contactAdded', function(bot, data) {
     var skypeId = data.from;
     var displayName = data.displayName;
 
     SkypeAddress.find({ "skypeId": skypeId }, function(err, skypeAddresses) {
         if (err) {
-            console.error("Failed to execute findBySkypeId(). Reason: " + err);
+            console.error("Failed to find skype contacts.", err);
             return;
         }
 
         if (skypeAddresses.length != 0) {
-            bot.reply("Hello again, " + displayName + "!"); 
+            bot.reply("Hello again, " + displayName + "! Nice to see you back! :)"); 
             return;
         }
 
@@ -63,11 +63,12 @@ botService.on('contactAdded', function(bot, data) {
         skypeAddress.save(function(err) {
             if (!err) {
                 console.log("Stored new skype contact with a name: " + skypeId);
+            } else {
+                console.error("Failed to store skype contact " + skypeId);
             }
         });
 
-        bot.reply("Hello, I'm a bot for reminding FLOWFACT Mobile team about their retro stuff. " 
-            + "Because they are used to forget :)");
+        bot.reply("Hello, FlowFacter! I'm your reminder sender to any contact I'm added to! :)");
     });
 });
 
@@ -106,18 +107,13 @@ botService.on('personalMessage', function(bot, data) {
 
     console.log("Scheduling notification to be sent with content:\n\n" + content);
     try {
-        agenda.schedule(humanInterval, 'send notifications', { "content": content });
+        agenda.schedule(humanInterval, 'sendNotifications', { "content": content });
     } catch (e) {
         console.error("Failed to schedule notification", e);
         bot.reply("Error occurred during scheduling reminder", true);
         return;
     }
     
-    console.log("Data from personalMessage callback:\n\n" + JSON.stringify(data));
-
-    var replyMessage = "Mr. " + data.fromDisplayName + ", thank you for scheduling a reminder job!\n\n";
-    replyMessage += "Scheduled new retro reminder job.\n\n";
-    replyMessage += "Will be fired at X date";
-
+    var replyMessage = "Scheduled new reminder job";
     bot.reply(replyMessage, true);
 });
