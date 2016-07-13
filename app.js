@@ -7,7 +7,7 @@ const SkypeAddress = require('./db').SkypeAddress;
 const server = require('./server');
 
 botService.on('contactAdded', (bot, data) => {
-    console.log("Contact added data: " + JSON.stringify(data));
+    console.log(`Contact added data: ${JSON.stringify(data)}`);
 
     var skypeId = data.from;
     var displayName = data.fromDisplayName;
@@ -19,7 +19,7 @@ botService.on('contactAdded', (bot, data) => {
         }
 
         if (skypeAddresses.length != 0) {
-            bot.reply("Hello again, " + displayName + "! Nice to see you back! :)"); 
+            bot.reply(`Hello again, ${displayName}! Nice to see you back! :)`); 
             return;
         }
 
@@ -31,9 +31,9 @@ botService.on('contactAdded', (bot, data) => {
 
         skypeAddress.save(function(err) {
             if (!err) {
-                console.log("Stored new skype contact with a name: " + skypeId);
+                console.log(`Stored new skype contact with a name: ${skypeId}`);
             } else {
-                console.error("Failed to store skype contact " + skypeId);
+                console.error(`Failed to store skype contact ${skypeId}`);
             }
         });
 
@@ -67,7 +67,7 @@ botService.on('personalMessage', (bot, data) => {
     try {
         var parsedCommand = command.split('|', 3);
         if (parsedCommand.length != 3) {
-            throw new Error("Incorrect command: " + parsedCommand);
+            throw new Error(`Incorrect command: ${parsedCommand}`);
             return;
         }
 
@@ -76,16 +76,16 @@ botService.on('personalMessage', (bot, data) => {
         var content = parsedCommand[2].trim();
 
         if (commandName != 'schedule') {
-            throw new Error("Incorrect command name, was: " + commandName);
+            throw new Error(`Incorrect command name, was: '${commandName}', expected: 'schedule'`);
             return;
         }
     } catch (e) {
-        console.error("Failed to parse bot command. Message: " + e.message);
+        console.error(`Failed to parse bot command. Message: ${e.message}`);
         onError();
         return;
     }
 
-    console.log("Scheduling notification to be sent with content:\n\n" + content);
+    console.log(`Scheduling notification to be sent with content:\n\n${content}`);
     try {
         agenda.schedule(reminderInterval, 'sendNotifications', { "content": content });
     } catch (e) {
@@ -99,34 +99,42 @@ botService.on('personalMessage', (bot, data) => {
 });
 
 botService.on('message', (bot, data) => {
+    console.log("message handler triggered");
     console.log(`message: ${JSON.stringify(data)}`);
 });
 
 botService.on('threadBotAdded', (bot, data) => {
+    console.log("threadBotAdded handler triggered");
     console.log(`threadBotAdded: ${JSON.stringify(data)}`);
 });
 
 botService.on('threadBotRemoved', (bot, data) => {
+    console.log("threadBotRemoved handler triggered");
     console.log(`threadBotRemoved: ${JSON.stringify(data)}`);
 });
 
 botService.on('threadAddMember', (bot, data) => {
+    console.log("threadAddMember handler triggered");
     console.log(`threadAddMember: ${JSON.stringify(data)}`);
 });
 
 botService.on('threadRemoveMember', (bot, data) => {
+    console.log("threadRemoveMember handler triggered");
     console.log(`threadRemoveMember: ${JSON.stringify(data)}`);
 });
 
 botService.on('threadTopicUpdated', (bot, data) => {
+    console.log("threadTopicUpdated handler triggered");
     console.log(`threadTopicUpdated: ${JSON.stringify(data)}`);
 });
 
 botService.on('threadHistoryDisclosedUpdate', (bot, data) => {
+    console.log("threadHistoryDisclosedUpdate handler triggered");
     console.log(`threadHistoryDisclosedUpdate: ${JSON.stringify(data)}`);
 });
 
 botService.on('attachment', (bot, data) => {
-    console.log(`threadHistoryDisclosedUpdate: ${JSON.stringify(data)}`);
+    console.log("attachment handler triggered");
+    console.log(`attachment: ${JSON.stringify(data)}`);
 });
 
