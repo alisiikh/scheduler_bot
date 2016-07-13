@@ -2,8 +2,10 @@ var restify = require('restify');
 var skype = require('skype-sdk');
 var botService = require('./skype-bot-service');
 var agenda = require('./agenda');
-var SkypeAddress = require('./model');
+var SkypeAddress = require('./model').SkypeAddress;
 var humanInterval = require('human-interval');
+
+console.log(SkypeAddress);
 
 var port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
 var ipAddress = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
@@ -42,7 +44,7 @@ server.listen(port, ipAddress, function() {
 
 botService.on('contactAdded', function(bot, data) {
     console.log("Contact added data: " + JSON.stringify(data));
-    
+
     var skypeId = data.from;
     var displayName = data.fromDisplayName;
 
