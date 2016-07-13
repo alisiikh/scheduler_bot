@@ -41,8 +41,10 @@ server.listen(port, ipAddress, function() {
 });
 
 botService.on('contactAdded', function(bot, data) {
+    console.log("Contact added data: " + JSON.stringify(data));
+    
     var skypeId = data.from;
-    var displayName = data.displayName;
+    var displayName = data.fromDisplayName;
 
     SkypeAddress.find({ "skypeId": skypeId }, function(err, skypeAddresses) {
         if (err) {
