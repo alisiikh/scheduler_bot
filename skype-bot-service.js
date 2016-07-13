@@ -1,8 +1,9 @@
-var skype = require('skype-sdk');
-var humanInterval = require('human-interval');
-var SkypeAddress = require('./model').SkypeAddress;
+'use strict';
 
-var botService = new skype.BotService({
+const skype = require('skype-sdk');
+const SkypeAddress = require('./model').SkypeAddress;
+
+const botService = new skype.BotService({
     messaging: {
         botId: 'dd76f065-6693-471a-a996-cd74cb71c207',
         serverUrl : "https://apis.skype.com",

@@ -1,10 +1,12 @@
-var mongoose = require('mongoose');
-var mongoUrl = require('./db').mongoUrl;
-var Schema = mongoose.Schema;
+'use strict';
+
+const mongoose = require('mongoose');
+const mongoUrl = require('./db').mongoUrl;
+const Schema = mongoose.Schema;
 
 mongoose.connect(mongoUrl);
 
-var skypeAddressSchema = new Schema({ 
+const skypeAddressSchema = new Schema({ 
 		skypeId: { type: String, index: { unique: true } },
 		displayName: String,
 		dateCreated: Date 

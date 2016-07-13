@@ -1,3 +1,5 @@
+'use strict';
+
 var Agenda = require('agenda');
 var mongoUrl = require('./db').mongoUrl;
 var botService = require('./skype-bot-service');

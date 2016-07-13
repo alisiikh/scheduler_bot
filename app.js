@@ -1,54 +1,21 @@
-var restify = require('restify');
-var skype = require('skype-sdk');
-var botService = require('./skype-bot-service');
-var agenda = require('./agenda');
-var SkypeAddress = require('./model').SkypeAddress;
-var humanInterval = require('human-interval');
+'use strict';
 
-console.log(SkypeAddress);
+const skype = require('skype-sdk');
+const botService = require('./skype-bot-service');
+const agenda = require('./agenda');
+const SkypeAddress = require('./model').SkypeAddress;
+const server = require('./server');
 
 var port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
 var ipAddress = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
 
-var server = restify.createServer();
-server.use(restify.acceptParser(server.acceptable));
-server.use(restify.bodyParser({ mapParams: true }));
-server.post('/v1/chat', skype.messagingHandler(botService));
-server.post('/retro', function(req, res, next) {
-    var content = req.params.content;
-    var reminderDate = req.params.reminderDate;
-
-    agenda.cancel({ name: 'sendNotifications' }, function(err, numRemoved) {
-        if (err) {
-            console.error("Failed to remove 'send notification' jobs");
-        } else {
-            console.log("Removed " + numRemoved + " 'send notification' jobs");
-
-            agenda.schedule(reminderDate, 'sendNotifications', { "content": content });
-
-            console.log("Scheduled new retro reminder job");
-        }
-    });
-
-    var body = "Retro reminder has been scheduled " + reminderDate + " with content:\n" + content;
-    res.writeHead(200, {
-        'Content-Length': body.length,
-        'Content-Type': 'text/plain'
-    });
-    res.write(body);
-    res.end();
-});
-server.listen(port, ipAddress, function() {
-   console.log('Server is listening for incoming requests on port %s', server.url);
-});
-
-botService.on('contactAdded', function(bot, data) {
+botService.on('contactAdded', (bot, data) => {
     console.log("Contact added data: " + JSON.stringify(data));
 
     var skypeId = data.from;
     var displayName = data.fromDisplayName;
 
-    SkypeAddress.find({ "skypeId": skypeId }, function(err, skypeAddresses) {
+    SkypeAddress.find({ "skypeId": skypeId }, (err, skypeAddresses) => {
         if (err) {
             console.error("Failed to find skype contacts.", err);
             return;
@@ -78,7 +45,11 @@ botService.on('contactAdded', function(bot, data) {
     });
 });
 
-botService.on('personalMessage', function(bot, data) {
+botService.on('contactRemoved', (bot, data) => {
+    console.log(`contactRemoved: ${JSON.stringify(data)}`);
+});
+
+botService.on('personalMessage', (bot, data) => {
     var command = data.content;
     if (command.startsWith('Edited')) {
         console.log("User edited previous message, no need to spam!");
@@ -129,3 +100,36 @@ botService.on('personalMessage', function(bot, data) {
     var replyMessage = "Scheduled new reminder job (whew)";
     bot.reply(replyMessage, true);
 });
+
+botService.on('message', (bot, data) => {
+    console.log(`message: ${JSON.stringify(data)}`);
+});
+
+botService.on('threadBotAdded', (bot, data) => {
+    console.log(`threadBotAdded: ${JSON.stringify(data)}`);
+});
+
+botService.on('threadBotRemoved', (bot, data) => {
+    console.log(`threadBotRemoved: ${JSON.stringify(data)}`);
+});
+
+botService.on('threadAddMember', (bot, data) => {
+    console.log(`threadAddMember: ${JSON.stringify(data)}`);
+});
+
+botService.on('threadRemoveMember', (bot, data) => {
+    console.log(`threadRemoveMember: ${JSON.stringify(data)}`);
+});
+
+botService.on('threadTopicUpdated', (bot, data) => {
+    console.log(`threadTopicUpdated: ${JSON.stringify(data)}`);
+});
+
+botService.on('threadHistoryDisclosedUpdate', (bot, data) => {
+    console.log(`threadHistoryDisclosedUpdate: ${JSON.stringify(data)}`);
+});
+
+botService.on('attachment', (bot, data) => {
+    console.log(`threadHistoryDisclosedUpdate: ${JSON.stringify(data)}`);
+});
+
