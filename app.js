@@ -80,7 +80,7 @@ botService.on('personalMessage', (bot, data) => {
             return;
         }
     } catch (e) {
-        console.error("Failed to parse bot command", e);
+        console.error("Failed to parse bot command. Message: " + e.message);
         onError();
         return;
     }

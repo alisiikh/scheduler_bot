@@ -6,9 +6,7 @@ const SkypeAddress = require('./db').SkypeAddress;
 const appCfg = require('./config');
 
 var agenda = new Agenda({ 
-	db: {
-		address: appCfg.databaseURL 
-	},
+	db: { address: appCfg.databaseURL },
 	processEvery: '30 seconds'
 });
 
