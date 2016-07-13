@@ -1,11 +1,17 @@
 'use strict';
 
-var Agenda = require('agenda');
-var mongoUrl = require('./db').mongoUrl;
-var botService = require('./skype-bot-service');
-var SkypeAddress = require('./model').SkypeAddress;
+const Agenda = require('agenda');
+const botService = require('./skype-bot-service');
+const SkypeAddress = require('./db').SkypeAddress;
+const appCfg = require('./config');
 
-var agenda = new Agenda({ db: { address: mongoUrl }, processEvery: '30 seconds' });
+var agenda = new Agenda({ 
+	db: {
+		address: appCfg.databaseURL 
+	},
+	processEvery: '30 seconds'
+});
+
 agenda.define('sendNotifications', function(job, done) {
 	var jobData = job.attrs.data;
 	var content = jobData.content;

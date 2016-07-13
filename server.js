@@ -4,15 +4,13 @@ const restify = require('restify');
 const agenda = require('./agenda');
 const skype = require('skype-sdk');
 const botService = require('./skype-bot-service');
-
-var port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
-var ipAddress = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
+const appCfg = require('./config');
 
 const server = restify.createServer();
 server.use(restify.acceptParser(server.acceptable));
 server.use(restify.bodyParser({ mapParams: true }));
 server.post('/v1/chat', skype.messagingHandler(botService));
-server.post('/retro', function(req, res, next) {
+server.post('/retro', (req, res, next) => {
     const content = req.params.content;
     const reminderDate = req.params.reminderDate;
 
@@ -36,6 +34,8 @@ server.post('/retro', function(req, res, next) {
     res.write(body);
     res.end();
 });
-server.listen(port, ipAddress, () => {
+server.listen(appCfg.port, appCfg.ipAddress, () => {
    console.log('Server is listening for incoming requests on port %s', server.url);
 });
+
+module.exports = server;

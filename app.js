@@ -3,9 +3,8 @@
 const skype = require('skype-sdk');
 const botService = require('./skype-bot-service');
 const agenda = require('./agenda');
-const SkypeAddress = require('./model').SkypeAddress;
+const SkypeAddress = require('./db').SkypeAddress;
 const server = require('./server');
-
 
 botService.on('contactAdded', (bot, data) => {
     console.log("Contact added data: " + JSON.stringify(data));

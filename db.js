@@ -1,8 +1,16 @@
 'use strict';
 
-const dbName = 'flowfact-skype-bot';
-const mongoHost = process.env.OPENSHIFT_NODEJS_IP || 'localhost';
-const mongoPort = '27017';
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+const appCfg = require('./config');
 
-module.exports.mongoUrl = process.env.MONGODB_URL 
-	|| ('mongodb://' + mongoHost + ':' + mongoPort + '/' + dbName);
+mongoose.connect(appCfg.databaseURL);
+
+module.exports.SkypeAddress = mongoose.model('SkypeAddress', new Schema({ 
+		skypeId: { 
+			type: String, 
+			index: { unique: true } 
+		},
+		displayName: String,
+		dateCreated: Date 
+	}));
