@@ -6,8 +6,6 @@ const agenda = require('./agenda');
 const SkypeAddress = require('./model').SkypeAddress;
 const server = require('./server');
 
-var port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
-var ipAddress = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
 
 botService.on('contactAdded', (bot, data) => {
     console.log("Contact added data: " + JSON.stringify(data));
