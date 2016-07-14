@@ -19,6 +19,11 @@ agenda.define('sendNotifications', (job, done) => {
 	console.log(`Job 'sendNotifications' is being fired for skypeId: ${skypeId}!`);
 
 	SkypeAddress.findOne({ "skypeId": skypeId }, (err, initiator) => {
+		if (err) {
+			botService.send(skypeId, "Sadly an error occurred during sendNotifications job");
+			return;
+		}
+		
 		if (target === "me") {
 			botService.send(initiator.skypeId, `Your personal reminder:\n\n${content}`);
 		} else if (target === "all") {

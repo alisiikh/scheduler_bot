@@ -80,6 +80,8 @@ botService.on('personalMessage', (bot, data) => {
                 "target": "me",
                 "skypeId": skypeId
             });
+
+            bot.reply("Scheduled repeat job for you :)", true)
         } else if (command.name === 'abort') {
             agenda.schedule('now', 'abortNotifications', {
                 "skypeId": skypeId
