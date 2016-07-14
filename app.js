@@ -88,6 +88,8 @@ botService.on('personalMessage', (bot, data) => {
             bot.reply("It's sad to see you go, hope you will return someday ;(", true);
         }
     } catch (e) {
+        console.log("Failed to parse command", e);
+
         let helpMessage = "Usage:\n\n";
         helpMessage += "schedule | in 1 minute | me | Retro was brilliant!\n";
         helpMessage += "schedule | in 30 seconds | all | Message can be multiline as well (wait)\n";
