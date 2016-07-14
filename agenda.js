@@ -19,8 +19,8 @@ agenda.define('sendNotifications', (job, done) => {
 	console.log(`Job 'sendNotifications' is being fired for skypeId: ${skypeId}!`);
 
 	SkypeAddress.findOne({ "skypeId": skypeId }, (err, initiator) => {
-		if (err) {
-			botService.send(skypeId, "Sadly an error occurred during sendNotifications job");
+		if (!initiator) {
+			botService.send("Whoa, I can't find your info in database! :(");
 			return;
 		}
 
@@ -29,7 +29,7 @@ agenda.define('sendNotifications', (job, done) => {
 		} else if (target === "all") {
 			SkypeAddress.find({}, (err, skypeAddresses) => {
 
-				skypeAddresses.forEach(function(skypeAddress) {
+				skypeAddresses.forEach((skypeAddress) => {
 					console.log(`Sending message to skypeId: ${skypeAddress.skypeId}`);
 
 					botService.send(skypeAddress.skypeId, `A message from ${initiator.displayName}:\n\n${content}`);
@@ -45,11 +45,11 @@ agenda.define('removeContact', (job, done) => {
 	let skypeId = jobData.skypeId;
 
 	SkypeAddress.findOne({ "skypeId" : skypeId }, (err, skypeAddress) => {
-		if (err) {
-			console.log(err);
+		if (!skypeAddress) {
+			botService.send("Whoa, I can't find your info in database! :(");
 			return;
 		}
-		
+
 		skypeAddress.remove((err) => {
 			if (!err) {
 				console.log(`Removed skype contact from db with skypeId: ${skypeId}`);
