@@ -5,46 +5,56 @@ const botService = require('./skype-bot-service');
 const SkypeAddress = require('./db').SkypeAddress;
 const appCfg = require('./config');
 
-var agenda = new Agenda({ 
+const agenda = new Agenda({ 
 	db: { address: appCfg.databaseURL },
 	processEvery: '30 seconds'
 });
 
-agenda.define('sendNotifications', function(job, done) {
-	var jobData = job.attrs.data;
-	var content = jobData.content;
+agenda.define('sendNotifications', (job, done) => {
+	let jobData = job.attrs.data;
+	let content = jobData.content;
+	let skypeId = jobData.skypeId;
+	let target = jobData.target;
 
-	console.log("Send notifications job is fired!\nContent:\n" + content);
+	console.log(`Job 'sendNotifications' is being fired for skypeId: ${skypeId}!`);
 
-	SkypeAddress.find({}, function(err, addresses) {
-		if (err) {
-			console.error("Error during fetching skype addresses!", err);
-			return;
+	SkypeAddress.findOne({ "skypeId": skypeId }, (err, initiator) => {
+		if (target === "me") {
+			botService.send(initiator.skypeId, `Your personal reminder:\n\n${content}`);
+		} else if (target === "all") {
+			SkypeAddress.find({}, (err, skypeAddresses) => {
+
+				skypeAddresses.forEach(function(skypeAddress) {
+					console.log(`Sending message to skypeId: ${skypeAddress.skypeId}`);
+
+					botService.send(skypeAddress.skypeId, `A message from ${initiator.displayName}\n\n${content}`);
+				});
+			});
 		}
+	});
+	
+});
 
-		console.log("Found " + addresses.length + " addresses, sending notifications to all of them!");
+agenda.define('removeContact', (job, done) => {
+	let jobData = job.attrs.data;
+	let skypeId = jobData.skypeId;
 
-		addresses.forEach(function(address) {
-			console.log("Sending notification to skype contact " + address.skypeId);
-			try {
-			   var message = "Time has come! I have a very important note for you:\n\n";
-			   message += "==============================\n";
-			   message += content;
-			   message += "\n==============================\n";
-			   message += "\nThanks for your time, " + address.displayName + "! (movember)";
-
-			   botService.send(address.skypeId, message);
-		    } catch (e) {
-               console.error("Failed to send reminder to skype contact " + address.skypeId, e);
-               return;
-		    }
+	SkypeAddress.findOne({ "skypeId" : skypeId }, (err, skypeAddress) => {
+		skypeAddress.remove((err) => {
+			if (!err) {
+				console.log(`Removed skype contact from db with skypeId: ${skypeId}`);
+			}
 		});
-
-		done();
 	});
 });
 
-agenda.on('ready', function() {
+agenda.define('abortNotifications', (job, done) => {
+	let jobData = job.attrs.data;
+	let skypeId = jobData.skypeId;
+	// TODO: Iterate through user's jobs and send back information about removed jobs
+});
+
+agenda.on('ready', () => {
 	console.log("Agenda successfully started and ready to receive job requests.");	
 	agenda.start();
 });

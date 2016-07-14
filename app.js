@@ -5,6 +5,7 @@ const botService = require('./skype-bot-service');
 const agenda = require('./agenda');
 const SkypeAddress = require('./db').SkypeAddress;
 const server = require('./server');
+const skypeCommandParser = require('./skype-command-parser');
 
 botService.on('contactAdded', (bot, data) => {
     console.log(`Contact added data: ${JSON.stringify(data)}`);
@@ -13,11 +14,6 @@ botService.on('contactAdded', (bot, data) => {
     let displayName = data.fromDisplayName;
 
     SkypeAddress.find({ "skypeId": skypeId }, (err, skypeAddresses) => {
-        if (err) {
-            console.error("Failed to find skype contacts.", err);
-            return;
-        }
-
         if (skypeAddresses.length != 0) {
             bot.reply(`Hello again, ${displayName}! Nice to see you back! :)`); 
             return;
@@ -37,64 +33,72 @@ botService.on('contactAdded', (bot, data) => {
             }
         });
 
-        bot.reply("Hello, FlowFacter! \nI'm your reminder sender to any contact I'm added to! \n\n" 
-            + "For any suggestions please contact 8:lizard5472 :)", true);
+        bot.reply("Hello, ${displayName}! Send anything to me and I will let you know what I can do.", true);
     });
 });
 
 botService.on('contactRemoved', (bot, data) => {
-    console.log(`contactRemoved: ${JSON.stringify(data)}`);
+    let skypeId = data.from;
+
+    agenda.schedule('now', 'removeContact', {
+        "skypeId": skypeId
+    });
 });
 
 botService.on('personalMessage', (bot, data) => {
-    let command = data.content;
-    if (command.startsWith('Edited')) {
+    let content = data.content;
+    let skypeId = data.from;
+
+    if (content.startsWith('Edited')) {
         console.log("User edited previous message, no need to spam!");
         return;
     }
 
-    function onError() {
-        var replyErrorMessage = "Command is incorrect, please see examples below:\n\n";
-        replyErrorMessage += "Example Usages:\n\n";
-        replyErrorMessage += "schedule | in 1 minute | Retro was brilliant!\n";
-        replyErrorMessage += "schedule | in 30 seconds | Message can be multiline as well (wait)\n";
-        replyErrorMessage += "schedule | now | throw new UnsupportedOperationException( (facepalm) );\n";
-        replyErrorMessage += "schedule | in 10 days | or in ten days!\n";
-        replyErrorMessage += "\nIf you have any questions on time parameter, please ask Aleksey! (punch)";
-        bot.reply(replyErrorMessage, true);
-    }
-
     try {
-        var parsedCommand = command.split('|', 3);
-        if (parsedCommand.length != 3) {
-            throw new Error(`Incorrect command: ${parsedCommand}`);
-            return;
-        }
+        let command = skypeCommandParser.parseCommand(content);
+        if (command.name === 'schedule') {
+            console.log(`Scheduling notification to be sent with content:\n\n${command.content}`);
+                
+            agenda.schedule(command.interval, 'sendNotifications', { 
+                "content": command.content,
+                "target": command.target,
+                "skypeId": skypeId
+            });
 
-        var commandName = parsedCommand[0].trim();
-        var reminderInterval = parsedCommand[1].trim();
-        var content = parsedCommand[2].trim();
+            bot.reply("Scheduled new reminder job (whew)", true);
+        } else if (command.name === 'repeat') {
+            console.log(`Scheduling repeat notification to be sent with content:\n\n${command.content}`);
 
-        if (commandName != 'schedule') {
-            throw new Error(`Incorrect command name, was: '${commandName}', expected: 'schedule'`);
-            return;
+            agenda.every(command.interval, 'sendNotifications', { 
+                "content": command.content,
+                "target": "me",
+                "skypeId": skypeId
+            });
+        } else if (command.name === 'abort') {
+            agenda.schedule('now', 'abortNotifications', {
+                "skypeId": skypeId
+            });
+
+            bot.reply("Ok, I removed all notifications triggered by you", true);
+        } else if (command.name === 'unsubscribe') {
+            agenda.schedule('now', 'removeContact', {
+                "skypeId": skypeId
+            });
+
+            bot.reply("It's sad to see you go, hope you will return someday ;(", true);
         }
     } catch (e) {
-        console.error(`Failed to parse bot command. Message: ${e.message}`);
-        onError();
-        return;
+        let helpMessage = "Usage:\n\n";
+        helpMessage += "schedule | in 1 minute | me | Retro was brilliant!\n";
+        helpMessage += "schedule | in 30 seconds | all | Message can be multiline as well (wait)\n";
+        helpMessage += "schedule | now | me | throw new UnsupportedOperationException( (facepalm) );\n";
+        helpMessage += "schedule | in 10 days | me | or in ten days!\n";
+        helpMessage += "repeat | 30 minutes | you can also repeat commands, but please use reasonable interval"
+        helpMessage += "You can also type: 'abort' to me, and I will kill jobs that were triggered by you"
+        helpMessage += "Or you can also unsubscribe if I pissed you off by typing 'unsubscribe' to me."
+        helpMessage += "\n\nIf you have any questions or suggestions for improvements, please contact Aleksey! (punch)\nThanks, mate! :)";
+        bot.reply(helpMessage, true);
     }
-
-    console.log(`Scheduling notification to be sent with content:\n\n${content}`);
-    try {
-        agenda.schedule(reminderInterval, 'sendNotifications', { "content": content });
-    } catch (e) {
-        console.error("Failed to schedule notification", e);
-        bot.reply("Error occurred during scheduling reminder", true);
-        return;
-    }
-    
-    bot.reply("Scheduled new reminder job (whew)", true);
 });
 
 botService.on('message', (bot, data) => {
