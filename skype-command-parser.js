@@ -41,7 +41,7 @@ class SkypeCommandParser {
 		let target = parsedCommand[2].trim();
 		let content = parsedCommand[3].trim();
 
-		if (target !== "me" || target !== "all") {
+		if (target !== "me" && target !== "all") {
 			target = "me";
 		}
 

@@ -65,7 +65,9 @@ botService.on('personalMessage', (bot, data) => {
                 "skypeId": skypeId
             });
 
-            bot.reply("Scheduled new reminder job (whew)", true);
+            if (command.interval !== 'now') {
+                bot.reply("Scheduled new reminder job (whew)", true);
+            }
         } else if (command.name === 'repeat') {
             console.log(`Scheduling repeat notification to be sent with content:\n\n${command.content}`);
 
