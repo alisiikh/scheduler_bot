@@ -13,25 +13,17 @@ botService.on('contactAdded', (bot, data) => {
     let skypeId = data.from;
     let displayName = data.fromDisplayName;
 
-    SkypeAddress.find({ "skypeId": skypeId }, (err, skypeAddresses) => {
-        if (skypeAddresses.length != 0) {
+    SkypeAddress.findOne({ "skypeId": skypeId }, (err, skypeAddress) => {
+        if (skypeAddress) {
             bot.reply(`Hello again, ${displayName}! Nice to see you back! :)`); 
             return;
         }
 
-        let skypeAddress = new SkypeAddress({ 
+        new SkypeAddress({ 
             "skypeId": skypeId, 
             "displayName": displayName,
             "dateCreated": new Date()
-        });
-
-        skypeAddress.save(function(err) {
-            if (!err) {
-                console.log(`Stored new skype contact with a name: ${skypeId}`);
-            } else {
-                console.error(`Failed to store skype contact ${skypeId}`);
-            }
-        });
+        }).save();
 
         bot.reply(`Hello, ${displayName}! Say something to me, and I will let you know what I can.`, true);
     });
