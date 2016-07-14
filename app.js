@@ -33,7 +33,7 @@ botService.on('contactAdded', (bot, data) => {
             }
         });
 
-        bot.reply("Hello, ${displayName}! Send anything to me and I will let you know what I can do.", true);
+        bot.reply(`Hello, ${displayName}! Say something to me, and I will let you know what I can.`, true);
     });
 });
 
@@ -66,7 +66,11 @@ botService.on('personalMessage', (bot, data) => {
             });
 
             if (command.interval !== 'now') {
-                bot.reply("Scheduled new reminder job (whew)", true);
+                if (command.target === "me") {
+                    bot.reply("Scheduled new reminder job for you :)", true);
+                } else if (command.target === "all") {
+                    bot.reply("Scheduled new reminder job for all (whew)", true);
+                }
             }
         } else if (command.name === 'repeat') {
             console.log(`Scheduling repeat notification to be sent with content:\n\n${command.content}`);
@@ -81,7 +85,8 @@ botService.on('personalMessage', (bot, data) => {
                 "skypeId": skypeId
             });
 
-            bot.reply("Ok, I removed all notifications triggered by you", true);
+            // TODO: Change a message in return
+            botService.send(skypeId, "Sadly, I can't perform this action yet, \nAleksey is very tired after work and has no time to play with me :(");
         } else if (command.name === 'unsubscribe') {
             agenda.schedule('now', 'removeContact', {
                 "skypeId": skypeId

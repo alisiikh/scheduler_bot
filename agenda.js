@@ -27,7 +27,7 @@ agenda.define('sendNotifications', (job, done) => {
 				skypeAddresses.forEach(function(skypeAddress) {
 					console.log(`Sending message to skypeId: ${skypeAddress.skypeId}`);
 
-					botService.send(skypeAddress.skypeId, `A message from ${initiator.displayName}\n\n${content}`);
+					botService.send(skypeAddress.skypeId, `A message from ${initiator.displayName}:\n\n${content}`);
 				});
 			});
 		}
@@ -52,8 +52,6 @@ agenda.define('abortNotifications', (job, done) => {
 	let jobData = job.attrs.data;
 	let skypeId = jobData.skypeId;
 	// TODO: Iterate through user's jobs and send back information about removed jobs
-
-	botService.send(skypeId, "Sadly, I can't perform this action yet, \nAleksey is very tired after work and has no time to play with me :(");
 });
 
 agenda.on('ready', () => {
