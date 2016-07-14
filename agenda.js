@@ -23,7 +23,7 @@ agenda.define('sendNotifications', (job, done) => {
 			botService.send(skypeId, "Sadly an error occurred during sendNotifications job");
 			return;
 		}
-		
+
 		if (target === "me") {
 			botService.send(initiator.skypeId, `Your personal reminder:\n\n${content}`);
 		} else if (target === "all") {
@@ -45,6 +45,11 @@ agenda.define('removeContact', (job, done) => {
 	let skypeId = jobData.skypeId;
 
 	SkypeAddress.findOne({ "skypeId" : skypeId }, (err, skypeAddress) => {
+		if (err) {
+			console.log(err);
+			return;
+		}
+		
 		skypeAddress.remove((err) => {
 			if (!err) {
 				console.log(`Removed skype contact from db with skypeId: ${skypeId}`);
