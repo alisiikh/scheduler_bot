@@ -20,7 +20,7 @@ agenda.define('sendNotifications', (job, done) => {
 
 	SkypeAddress.findOne({ "skypeId": skypeId }, (err, initiator) => {
 		if (!initiator) {
-			botService.send("Whoa, I can't find your info in database! :(");
+			botService.send(skypeId, "Whoa, I can't find your info in database! :(");
 			return;
 		}
 
@@ -37,7 +37,6 @@ agenda.define('sendNotifications', (job, done) => {
 			});
 		}
 	});
-	
 });
 
 agenda.define('removeContact', (job, done) => {
@@ -46,7 +45,7 @@ agenda.define('removeContact', (job, done) => {
 
 	SkypeAddress.findOne({ "skypeId" : skypeId }, (err, skypeAddress) => {
 		if (!skypeAddress) {
-			botService.send("Whoa, I can't find your info in database! :(");
+			botService.send(skypeId, "Whoa, I can't find your info in database! :(");
 			return;
 		}
 
