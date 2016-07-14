@@ -9,8 +9,8 @@ const server = require('./server');
 botService.on('contactAdded', (bot, data) => {
     console.log(`Contact added data: ${JSON.stringify(data)}`);
 
-    var skypeId = data.from;
-    var displayName = data.fromDisplayName;
+    let skypeId = data.from;
+    let displayName = data.fromDisplayName;
 
     SkypeAddress.find({ "skypeId": skypeId }, (err, skypeAddresses) => {
         if (err) {
@@ -23,7 +23,7 @@ botService.on('contactAdded', (bot, data) => {
             return;
         }
 
-        var skypeAddress = new SkypeAddress({ 
+        let skypeAddress = new SkypeAddress({ 
             "skypeId": skypeId, 
             "displayName": displayName,
             "dateCreated": new Date()
@@ -47,7 +47,7 @@ botService.on('contactRemoved', (bot, data) => {
 });
 
 botService.on('personalMessage', (bot, data) => {
-    var command = data.content;
+    let command = data.content;
     if (command.startsWith('Edited')) {
         console.log("User edited previous message, no need to spam!");
         return;
@@ -94,8 +94,7 @@ botService.on('personalMessage', (bot, data) => {
         return;
     }
     
-    var replyMessage = "Scheduled new reminder job (whew)";
-    bot.reply(replyMessage, true);
+    bot.reply("Scheduled new reminder job (whew)", true);
 });
 
 botService.on('message', (bot, data) => {
