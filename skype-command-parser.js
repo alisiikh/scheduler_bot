@@ -13,18 +13,18 @@ class SkypeCommandParser {
 	parseCommand(commandLine) {
 		try {
 			let parsedCommand = commandLine.split(this.separator);
-			let commandName = parsedCommand[0].trim();
+			let name = parsedCommand[0].trim();
 
-			if (commandName === "schedule") {
+			if (name === "schedule") {
 				return this.generateScheduleCommand(parsedCommand);;
-			} else if (commandName === "repeat") {
+			} else if (name === "repeat") {
 				return this.generateRepeatCommand(parsedCommand);
-			} else if (commandName === "abort") {
+			} else if (name === "abort") {
 				return this.generateAbortCommand(parsedCommand);
-			} else if (commandName === "unsubscribe") { 
+			} else if (name === "unsubscribe") { 
 				return this.generateUnsubscribeCommand(parsedCommand);
 			} else {
-				throw new Error(`Incorrect command name: ${commandName}`);
+				throw new Error(`Incorrect command name: ${name}`);
 			}
 		} catch (e) {
 			console.error(`Failed to parse bot command. Message: ${e.message}`);
@@ -46,7 +46,7 @@ class SkypeCommandParser {
 		}
 
 		this.validateInterval(interval);
-		// TODO: validate interval with humanInterval
+
 
 		command.target = target;
 		command.interval = interval;
@@ -61,6 +61,8 @@ class SkypeCommandParser {
 
 		let interval = parsedCommand[1].trim();
 		let content = parsedCommand[2].trim();
+
+		this.validateInterval(interval);
 
 		command.interval = interval;
 		command.content = content;
@@ -86,12 +88,13 @@ class SkypeCommandParser {
 	}
 
 	validateInterval(interval) {
-
+		// TODO: validate interval with humanInterval
 	}
 }
 
 
 module.exports = new SkypeCommandParser();
+
 
 class Command {
 	constructor() {
@@ -99,8 +102,8 @@ class Command {
 			throw new TypeError("Command class is an abstract class");
 		}
 
-		if (typeof this.commandName === "undefined") {
-			throw new TypeError("Inheritor must override 'get commandName' getter");
+		if (typeof this.name === "undefined") {
+			throw new TypeError("Inheritor must override 'get name' getter");
 		}
 
 		if (typeof this.argsLength === "undefined") {
@@ -119,7 +122,7 @@ class ScheduleCommand extends Command {
 		super();
 	}
 
-	get commandName() {
+	get name() {
 		return "schedule";
 	}
 
@@ -137,7 +140,7 @@ class AbortCommand extends Command {
 		super();
 	}
 
-	get commandName() {
+	get name() {
 		return "abort";
 	}
 
@@ -155,7 +158,7 @@ class RepeatCommand extends Command {
 		super();
 	}
 
-	get commandName() {
+	get name() {
 		return "repeat";
 	}
 
@@ -173,7 +176,7 @@ class UnsubscribeCommand extends Command {
 		super();
 	}
 
-	get commandName() {
+	get name() {
 		return "unsubscribe";
 	}
 

@@ -95,10 +95,10 @@ botService.on('personalMessage', (bot, data) => {
         helpMessage += "schedule | in 30 seconds | all | Message can be multiline as well (wait)\n";
         helpMessage += "schedule | now | me | throw new UnsupportedOperationException( (facepalm) );\n";
         helpMessage += "schedule | in 10 days | me | or in ten days!\n";
-        helpMessage += "repeat | 30 minutes | you can also repeat commands, but please use reasonable interval"
-        helpMessage += "You can also type: 'abort' to me, and I will kill jobs that were triggered by you"
-        helpMessage += "Or you can also unsubscribe if I pissed you off by typing 'unsubscribe' to me."
-        helpMessage += "\n\nIf you have any questions or suggestions for improvements, please contact Aleksey! (punch)\nThanks, mate! :)";
+        helpMessage += "repeat | 30 minutes | you can also repeat commands, but please use reasonable interval\n"
+        helpMessage += "You can also type: 'abort' to me, and I will kill jobs that were triggered by you\n"
+        helpMessage += "Or you can also unsubscribe if I pissed you off by typing 'unsubscribe' to me.\n\n"
+        helpMessage += "If you have any questions or suggestions for improvements, please contact Aleksey! (punch)\nThanks, mate! :)";
         bot.reply(helpMessage, true);
     }
 });
