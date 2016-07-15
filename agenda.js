@@ -83,6 +83,14 @@ agenda.define('abortNotifications', (job, done) => {
 			});
 		}
 	});
+
+	agenda.jobs({ name: 'repeatNotifications' }, function(err, jobs) {
+		if (jobs && jobs.length > 0) {
+			jobs.forEach((job) => {
+				job.remove();
+			});
+		}
+	});
 	
 	botService.send(skypeId, "Cleared your jobs history and current running jobs");
 	done();
