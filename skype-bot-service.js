@@ -10,6 +10,7 @@ module.exports = new skype.BotService({
         requestTimeout : skypeCfg.requestTimeout,
         appId: skypeCfg.skypeAppId,
         appSecret: skypeCfg.skypeAppSecret,
-        enableRequestDebugging: skypeCfg.enableRequestDebugging
+        enableRequestDebugging: skypeCfg.enableRequestDebugging,
+        messagingServiceVersion: skypeCfg.messagingServiceVersion
     }
 });
