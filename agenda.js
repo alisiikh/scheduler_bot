@@ -1,8 +1,8 @@
 'use strict';
 
 const Agenda = require('agenda');
-const botService = require('./skype-bot-service');
-const SkypeAddress = require('./db').SkypeAddress;
+const bot = require('./bot').bot;
+const ContactModel = require('./db').ContactModel;
 const appCfg = require('./config');
 
 const agenda = new Agenda({ 
@@ -16,20 +16,20 @@ const agenda = new Agenda({
 agenda.define('sendNotifications', (job, done) => {
 	let jobData = job.attrs.data;
 	let content = jobData.content;
-	let skypeId = jobData.skypeId;
+	let skypeId = jobData.userId;
 	let target = jobData.target;
 
 	console.log(`Job 'sendNotifications' is being fired for skypeId: ${skypeId}!`);
 
-	SkypeAddress.findOne({ "skypeId": skypeId }, (err, initiator) => {
+	ContactModel.findOne({ "userId": skypeId }, (err, initiator) => {
 		if (target === "me") {
-			botService.send(initiator.skypeId, `Your personal one-time reminder:\n\n${content}`);
+			bot.send(initiator.userId, `Your personal one-time reminder:\n\n${content}`);
 		} else if (target === "all") {
-			SkypeAddress.find({}, (err, skypeAddresses) => {
+			ContactModel.find({}, (err, skypeAddresses) => {
 				skypeAddresses.forEach((skypeAddress) => {
-					console.log(`Sending message to skypeId: ${skypeAddress.skypeId}`);
+					console.log(`Sending message to skypeId: ${skypeAddress.userId}`);
 
-					botService.send(skypeAddress.skypeId, `A message from ${initiator.displayName}:\n\n${content}`);
+					bot.send(skypeAddress.userId, `A message from ${initiator.name}:\n\n${content}`);
 				});
 			});
 		} else {
@@ -43,20 +43,20 @@ agenda.define('sendNotifications', (job, done) => {
 agenda.define('repeatNotifications', (job, done) => {
 	let jobData = job.attrs.data;
 	let content = jobData.content;
-	let skypeId = jobData.skypeId;
+	let skypeId = jobData.userId;
 
-	botService.send(skypeId, `Your personal repeatable reminder:\n\n${content}`);
+	bot.send(skypeId, `Your personal repeatable reminder:\n\n${content}`);
 
 	done();
 });
 
 agenda.define('removeContact', (job, done) => {
 	let jobData = job.attrs.data;
-	let skypeId = jobData.skypeId;
+	let skypeId = jobData.userId;
 
-	SkypeAddress.findOne({ "skypeId" : skypeId }, (err, skypeAddress) => {
+	ContactModel.findOne({ "userId" : skypeId }, (err, skypeAddress) => {
 		if (!skypeAddress) {
-			botService.send(skypeId, "Whoa, I can't find your info in database! :(");
+			bot.send(skypeId, "Whoa, I can't find your info in database! :(");
 			return;
 		}
 
@@ -65,7 +65,7 @@ agenda.define('removeContact', (job, done) => {
 				console.log(`Removed skype contact from db with skypeId: ${skypeId}`);
 			}
 
-			botService.send(skypeId, "It's sad to see you go, hope you will return someday ;(");
+			bot.send(skypeId, "It's sad to see you go, hope you will return someday ;(");
 		});
 	});
 
@@ -74,19 +74,19 @@ agenda.define('removeContact', (job, done) => {
 
 agenda.define('abortNotifications', (job, done) => {
 	let jobData = job.attrs.data;
-	let skypeId = jobData.skypeId;
+	let skypeId = jobData.userId;
 
 	agenda.jobs({ $or: [{ name: 'sendNotifications' }, { name: 'repeatNotifications' }] }, function(err, jobs) {
 		if (jobs && jobs.length > 0) {
 			jobs.forEach((job) => {
-				if (job.attrs.data.skypeId === skypeId) {
+				if (job.attrs.data.userId === skypeId) {
 					job.remove();
 				}
 			});
 		}
 	});
 
-	botService.send(skypeId, "Cleared your jobs history and current running jobs");
+	bot.send(skypeId, "Cleared your jobs history and current running jobs");
 	done();
 });
 

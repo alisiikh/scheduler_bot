@@ -1,24 +1,19 @@
 'use strict';
 
 const restify = require('restify');
-const skype = require('skype-sdk');
-const botService = require('./skype-bot-service');
+const bot = require('./bot').bot;
+const chatConnector = require('./bot').chatConnector;
 const serverCfg = require('./config').server;
 
 const server = restify.createServer({
-   name: 'flowfact-skype-bot-server'
+   name: 'botServer'
 });
 server.use(restify.acceptParser(server.acceptable));
-
-if (serverCfg.ensureHttps) {
-   server.use(skype.ensureHttps(true));
-}
-
 server.use(restify.bodyParser({ mapParams: true }));
-server.post('/v1/chat', skype.messagingHandler(botService));
+server.post('/api/v3/chat', chatConnector.listen());
 
 server.listen(serverCfg.port, serverCfg.ipAddress, () => {
-   console.log('Server is listening for incoming requests on port %s', server.url);
+   console.log('%s is listening for incoming requests on port %s', server.name, server.url);
 });
 
 module.exports = server;

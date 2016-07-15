@@ -16,10 +16,10 @@
   "license": "MIT",
   "dependencies": {
     "agenda": "^0.8.1",
+    "botbuilder": "^3.0.1",
     "human-interval": "^0.1.6",
     "mongodb": "^2.2.1",
     "mongoose": "^4.5.3",
-    "restify": "^4.1.1",
-    "skype-sdk": "file:lib/skype-sdk.tar.gz"
+    "restify": "^4.1.1"
   }
 }
