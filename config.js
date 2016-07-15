@@ -12,7 +12,9 @@ module.exports = {
 		skypeAppId: process.env.SKYPE_APP_ID,
 		skypeAppSecret: process.env.SKYPE_APP_SECRET,
 		requestTimeout: 15000,
-		enableRequestDebugging: true
+		enableRequestDebugging: true,
+		messagingServiceVersion: 1
 	},
-	databaseURL: (process.env.MONGODB_URL ? process.env.MONGODB_URL + "flowfact-skype-bot" : null) || 'mongodb://127.0.0.1:27017/flowfact-skype-bot'
+	databaseURL: (process.env.MONGODB_URL ? process.env.MONGODB_URL + "flowfact-skype-bot" : null)
+	    || 'mongodb://127.0.0.1:27017/flowfact-skype-bot'
 };
