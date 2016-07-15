@@ -48,8 +48,6 @@ botService.on('personalMessage', (bot, data) => {
 
     let command = commandParser.parseCommand(content);
     if (command == null) {
-        console.log("Failed to parse command: ", e);
-
         let helpMessage = "Usage:\n\n";
         helpMessage += "schedule | in 1 minute | me | Retro was brilliant!\n";
         helpMessage += "schedule | in 30 seconds | all | Message can be multiline as well (wait)\n";
