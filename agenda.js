@@ -76,22 +76,16 @@ agenda.define('abortNotifications', (job, done) => {
 	let jobData = job.attrs.data;
 	let skypeId = jobData.skypeId;
 
-	agenda.jobs({ name: 'sendNotifications' }, function(err, jobs) {
+	agenda.jobs({ $or: [{ name: 'sendNotifications' }, { name: 'repeatNotifications' }] }, function(err, jobs) {
 		if (jobs && jobs.length > 0) {
 			jobs.forEach((job) => {
-				job.remove();
+				if (job.attrs.data.skypeId === skypeId) {
+					job.remove();
+				}
 			});
 		}
 	});
 
-	agenda.jobs({ name: 'repeatNotifications' }, function(err, jobs) {
-		if (jobs && jobs.length > 0) {
-			jobs.forEach((job) => {
-				job.remove();
-			});
-		}
-	});
-	
 	botService.send(skypeId, "Cleared your jobs history and current running jobs");
 	done();
 });
