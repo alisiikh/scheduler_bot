@@ -82,9 +82,8 @@ botService.on('personalMessage', (bot, data) => {
     } else if (command.name === 'repeat') {
         console.log(`Scheduling repeat notification to be sent with content:\n\n${command.content}`);
 
-        agenda.every(command.interval, 'sendNotifications', { 
+        agenda.every(command.interval, 'repeatNotifications', { 
             "content": command.content,
-            "target": "me",
             "skypeId": skypeId
         });
 
@@ -93,15 +92,10 @@ botService.on('personalMessage', (bot, data) => {
         agenda.schedule('now', 'abortNotifications', {
             "skypeId": skypeId
         });
-
-            // TODO: Change a message in return
-        botService.send(skypeId, "Sadly, I can't perform this action yet, \nAleksey is very tired after work and has no time to play with me :(");
     } else if (command.name === 'unsubscribe') {
         agenda.schedule('now', 'removeContact', {
             "skypeId": skypeId
         });
-
-        bot.reply("It's sad to see you go, hope you will return someday ;(", true);
     }
 });
 

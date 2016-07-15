@@ -22,16 +22,10 @@ agenda.define('sendNotifications', (job, done) => {
 	console.log(`Job 'sendNotifications' is being fired for skypeId: ${skypeId}!`);
 
 	SkypeAddress.findOne({ "skypeId": skypeId }, (err, initiator) => {
-		if (!initiator) {
-			botService.send(skypeId, "Whoa, I can't find your info in database! :(");
-			return;
-		}
-
 		if (target === "me") {
-			botService.send(initiator.skypeId, `Your personal reminder:\n\n${content}`);
+			botService.send(initiator.skypeId, `Your personal one-time reminder:\n\n${content}`);
 		} else if (target === "all") {
 			SkypeAddress.find({}, (err, skypeAddresses) => {
-
 				skypeAddresses.forEach((skypeAddress) => {
 					console.log(`Sending message to skypeId: ${skypeAddress.skypeId}`);
 
@@ -42,6 +36,18 @@ agenda.define('sendNotifications', (job, done) => {
 			console.log("No target specified for sendNotifications job");
 		}
 	});
+
+	done();
+});
+
+agenda.define('repeatNotifications', (job, done) => {
+	let jobData = job.attrs.data;
+	let content = jobData.content;
+	let skypeId = jobData.skypeId;
+
+	botService.send(skypeId, `Your personal repeatable reminder:\n\n${content}`);
+
+	done();
 });
 
 agenda.define('removeContact', (job, done) => {
@@ -58,8 +64,12 @@ agenda.define('removeContact', (job, done) => {
 			if (!err) {
 				console.log(`Removed skype contact from db with skypeId: ${skypeId}`);
 			}
+
+			botService.send(skypeId, "It's sad to see you go, hope you will return someday ;(");
 		});
 	});
+
+	done();
 });
 
 agenda.define('abortNotifications', (job, done) => {
@@ -72,10 +82,10 @@ agenda.define('abortNotifications', (job, done) => {
 				job.remove();
 			});
 		}
-		done();
 	});
 	
 	botService.send(skypeId, "Cleared your jobs history and current running jobs");
+	done();
 });
 
 agenda.on('ready', () => {
