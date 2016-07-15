@@ -11,7 +11,8 @@ module.exports = {
 		skypeApiURL: "https://apis.skype.com",
 		skypeAppId: process.env.SKYPE_APP_ID,
 		skypeAppSecret: process.env.SKYPE_APP_SECRET,
-		requestTimeout: 15000
+		requestTimeout: 15000,
+		enableRequestDebugging: true
 	},
 	databaseURL: (process.env.MONGODB_URL ? process.env.MONGODB_URL + "flowfact-skype-bot" : null) || 'mongodb://127.0.0.1:27017/flowfact-skype-bot'
 };

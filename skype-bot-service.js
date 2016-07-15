@@ -9,6 +9,7 @@ module.exports = new skype.BotService({
         serverUrl : skypeCfg.skypeApiURL,
         requestTimeout : skypeCfg.requestTimeout,
         appId: skypeCfg.skypeAppId,
-        appSecret: skypeCfg.skypeAppSecret
+        appSecret: skypeCfg.skypeAppSecret,
+        enableRequestDebugging: skypeCfg.enableRequestDebugging
     }
 });
