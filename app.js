@@ -101,6 +101,11 @@ botService.on('personalMessage', (bot, data) => {
     }
 });
 
+botService.onGroupCommand((regex, callback) => {
+    console.log(regex);
+    console.log(callback);
+});
+
 botService.on('groupMessage', (bot, data) => {
     console.log(`groupMessage handler triggered with data: ${data}`);
     bot.reply("Wow, thanks for teaching me answering in group!");
