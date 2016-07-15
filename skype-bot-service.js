@@ -1,14 +1,14 @@
 'use strict';
 
 const skype = require('skype-sdk');
-const appCfg = require('./config');
+const skypeCfg = require('./config').skype;
 
 module.exports = new skype.BotService({
     messaging: {
-        botId: appCfg.botId,
-        serverUrl : appCfg.skypeApiURL,
-        requestTimeout : 15000,
-        appId: appCfg.skypeAppId,
-        appSecret: appCfg.skypeAppSecret
+        botId: skypeCfg.botId,
+        serverUrl : skypeCfg.skypeApiURL,
+        requestTimeout : skypeCfg.requestTimeout,
+        appId: skypeCfg.skypeAppId,
+        appSecret: skypeCfg.skypeAppSecret
     }
 });
