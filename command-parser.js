@@ -59,7 +59,7 @@ class SkypeCommandParser {
 		let command = new RepeatCommand();
 		let interval = parsedCommand[1].trim();
 		let content = parsedCommand[2].trim();
-		
+
 		this.validateCommand(command, parsedCommand);
 		this.validateInterval(interval);
 
@@ -87,7 +87,7 @@ class SkypeCommandParser {
 	}
 
 	validateInterval(interval) {
-		if (isNaN(humanInterval(interval))) {
+		if (isNaN(humanInterval(interval)) && interval !== 'now') {
 			throw new Error(`Incorrect interval: ${interval}`)
 		}
 	}
