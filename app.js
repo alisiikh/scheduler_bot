@@ -8,6 +8,18 @@ const agenda = require('./agenda');
 const SkypeAddress = require('./db').SkypeAddress;
 const commandParser = require('./command-parser');
 
+botService.onPersonalCommand(/^help$/, (bot, data) => {
+    console.log(`Personal command handler with data: ${data}`);
+
+    bot.reply("Personal command received", true);
+});
+
+botService.onGroupCommand(/^help$/, (bot, data) => {
+    console.log(`Group command handler with data: ${data}`);
+
+    bot.reply("Group command received", true);
+});
+
 botService.on('contactAdded', (bot, data) => {
     let skypeId = data.from;
     let displayName = data.fromDisplayName;
@@ -38,6 +50,7 @@ botService.on('contactRemoved', (bot, data) => {
     });
 });
 
+// TODO: Maybe replace with a regex on onPersonalCommand handler
 botService.on('personalMessage', (bot, data) => {
     let content = data.content;
     let skypeId = data.from;
@@ -99,11 +112,6 @@ botService.on('personalMessage', (bot, data) => {
             "skypeId": skypeId
         });
     }
-});
-
-botService.onGroupCommand((regex, callback) => {
-    console.log(regex);
-    console.log(callback);
 });
 
 botService.on('groupMessage', (bot, data) => {
