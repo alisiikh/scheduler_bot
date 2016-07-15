@@ -1,10 +1,11 @@
 'use strict';
 
+const server = require('./server');
+
 const skype = require('skype-sdk');
 const botService = require('./skype-bot-service');
 const agenda = require('./agenda');
 const SkypeAddress = require('./db').SkypeAddress;
-const server = require('./server');
 const commandParser = require('./command-parser');
 
 botService.on('contactAdded', (bot, data) => {
@@ -32,9 +33,9 @@ botService.on('contactRemoved', (bot, data) => {
 
     console.log(`contactRemoved event was triggered with data: ${JSON.stringify(data)}`);
 
-    // agenda.schedule('now', 'removeContact', {
-    //     "skypeId": skypeId
-    // });
+    agenda.schedule('now', 'removeContact', {
+        "skypeId": skypeId
+    });
 });
 
 botService.on('personalMessage', (bot, data) => {
@@ -53,9 +54,9 @@ botService.on('personalMessage', (bot, data) => {
         helpMessage += "schedule | in 30 seconds | all | Message can be multiline as well (wait)\n";
         helpMessage += "schedule | now | me | throw new UnsupportedOperationException( (facepalm) );\n";
         helpMessage += "schedule | in 10 days | me | or in ten days!\n";
-        helpMessage += "repeat | 30 minutes | you can also repeat commands, but please use reasonable interval\n"
-        helpMessage += "You can also type: 'abort' to me, and I will kill jobs that were triggered by you\n"
-        helpMessage += "Or you can also unsubscribe if I pissed you off by typing 'unsubscribe' to me.\n\n"
+        helpMessage += "repeat | 30 minutes | you can also repeat commands, but please use reasonable interval\n";
+        helpMessage += "You can also type: 'abort' to me, and I will kill jobs that were triggered by you\n";
+        helpMessage += "Or you can also unsubscribe if I pissed you off by typing 'unsubscribe' to me.\n\n";
         helpMessage += "If you have any questions or suggestions for improvements, please contact Aleksey! (punch)\nThanks, mate! :)";
         bot.reply(helpMessage, true);
         return;
@@ -98,6 +99,11 @@ botService.on('personalMessage', (bot, data) => {
             "skypeId": skypeId
         });
     }
+});
+
+botService.on('groupMessage', (bot, data) => {
+    console.log(`groupMessage handler triggered with data: ${data}`);
+    bot.reply("Wow, thanks for teaching me answering in group!");
 });
 
 botService.on('message', (bot, data) => {

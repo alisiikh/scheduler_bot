@@ -1,13 +1,19 @@
 'use strict';
 
 const restify = require('restify');
-const agenda = require('./agenda');
 const skype = require('skype-sdk');
 const botService = require('./skype-bot-service');
 const appCfg = require('./config');
 
-const server = restify.createServer();
+const server = restify.createServer({
+   name: 'flowfact-skype-bot-server'
+});
 server.use(restify.acceptParser(server.acceptable));
+
+if (appCfg.ensureHttps) {
+   server.use(skype.ensureHttps(true));
+}
+
 server.use(restify.bodyParser({ mapParams: true }));
 server.post('/v1/chat', skype.messagingHandler(botService));
 server.listen(appCfg.port, appCfg.ipAddress, () => {

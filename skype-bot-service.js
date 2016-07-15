@@ -11,4 +11,4 @@ module.exports = new skype.BotService({
         appId: appCfg.skypeAppId,
         appSecret: appCfg.skypeAppSecret
     }
-});;
+});

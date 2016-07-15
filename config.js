@@ -7,5 +7,6 @@ module.exports = {
 	botId: 'dd76f065-6693-471a-a996-cd74cb71c207',
 	skypeApiURL: "https://apis.skype.com",
 	skypeAppId: process.env.SKYPE_APP_ID,
-	skypeAppSecret: process.env.SKYPE_APP_SECRET
-}
+	skypeAppSecret: process.env.SKYPE_APP_SECRET,
+	ensureHttps: true
+};
