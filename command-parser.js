@@ -1,6 +1,10 @@
 'use strict';
 
-
+let humanInterval = require('human-interval');
+let ScheduleCommand = require('./commands').ScheduleCommand;
+let	AbortCommand = require('./commands').AbortCommand;
+let	RepeatCommand = require('./commands').RepeatCommand;
+let	UnsubscribeCommand = require('./commands').UnsubscribeCommand;
 
 class SkypeCommandParser {
 	constructor() {
@@ -34,19 +38,16 @@ class SkypeCommandParser {
 
 	generateScheduleCommand(parsedCommand) {
 		let command = new ScheduleCommand();
-
-		this.validateCommand(command, parsedCommand);
-
 		let interval = parsedCommand[1].trim();
 		let target = parsedCommand[2].trim();
 		let content = parsedCommand[3].trim();
 
+		this.validateCommand(command, parsedCommand);
+		this.validateInterval(interval);
+
 		if (target !== "me" && target !== "all") {
 			target = "me";
 		}
-
-		this.validateInterval(interval);
-
 
 		command.target = target;
 		command.interval = interval;
@@ -56,12 +57,10 @@ class SkypeCommandParser {
 
 	generateRepeatCommand(parsedCommand) {
 		let command = new RepeatCommand();
-
-		this.validateCommand(command, parsedCommand);
-
 		let interval = parsedCommand[1].trim();
 		let content = parsedCommand[2].trim();
-
+		
+		this.validateCommand(command, parsedCommand);
 		this.validateInterval(interval);
 
 		command.interval = interval;
@@ -88,99 +87,12 @@ class SkypeCommandParser {
 	}
 
 	validateInterval(interval) {
-		// TODO: validate interval with humanInterval
+		if (isNaN(humanInterval(interval))) {
+			throw new Error(`Incorrect interval: ${interval}`)
+		}
 	}
 }
 
 
 module.exports = new SkypeCommandParser();
 
-
-class Command {
-	constructor() {
-		if (new.target === Command) {
-			throw new TypeError("Command class is an abstract class");
-		}
-
-		if (typeof this.name === "undefined") {
-			throw new TypeError("Inheritor must override 'get name' getter");
-		}
-
-		if (typeof this.argsLength === "undefined") {
-			throw new TypeError("Inheritor must override 'get argsLength' getter")
-		}
-	}
-}
-
-/**
-* Example:
-* schedule | now | me | content
-* schedule | in 30 minutes | all | content
-*/
-class ScheduleCommand extends Command {
-	constructor() {
-		super();
-	}
-
-	get name() {
-		return "schedule";
-	}
-
-	get argsLength() {
-		return 4;
-	}
-}
-
-/**
-* Example:
-* abort
-*/
-class AbortCommand extends Command {
-	constructor() {
-		super();
-	}
-
-	get name() {
-		return "abort";
-	}
-
-	get argsLength() {
-		return 1;
-	}
-}
-
-/**
-* repeat | 30 minutes | content
-* repeat | 0,30 * * * * | content
-*/
-class RepeatCommand extends Command {
-	constructor() {
-		super();
-	}
-
-	get name() {
-		return "repeat";
-	}
-
-	get argsLength() {
-		return 3;
-	}
-}
-
-/**
-* Example:
-* unsubscribe
-*/
-class UnsubscribeCommand extends Command {
-	constructor() {
-		super();
-	}
-
-	get name() {
-		return "unsubscribe";
-	}
-
-	get argsLength() {
-		return 1;
-	}
-}

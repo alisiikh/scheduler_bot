@@ -5,11 +5,9 @@ const botService = require('./skype-bot-service');
 const agenda = require('./agenda');
 const SkypeAddress = require('./db').SkypeAddress;
 const server = require('./server');
-const skypeCommandParser = require('./skype-command-parser');
+const commandParser = require('./command-parser');
 
 botService.on('contactAdded', (bot, data) => {
-    console.log(`Contact added data: ${JSON.stringify(data)}`);
-
     let skypeId = data.from;
     let displayName = data.fromDisplayName;
 
@@ -32,9 +30,11 @@ botService.on('contactAdded', (bot, data) => {
 botService.on('contactRemoved', (bot, data) => {
     let skypeId = data.from;
 
-    agenda.schedule('now', 'removeContact', {
-        "skypeId": skypeId
-    });
+    console.log(`contactRemoved event was triggered with data: ${JSON.stringify(data)}`);
+
+    // agenda.schedule('now', 'removeContact', {
+    //     "skypeId": skypeId
+    // });
 });
 
 botService.on('personalMessage', (bot, data) => {
@@ -46,50 +46,9 @@ botService.on('personalMessage', (bot, data) => {
         return;
     }
 
-    try {
-        let command = skypeCommandParser.parseCommand(content);
-        if (command.name === 'schedule') {
-            console.log(`Scheduling notification to be sent with content:\n\n${command.content}`);
-                
-            agenda.schedule(command.interval, 'sendNotifications', { 
-                "content": command.content,
-                "target": command.target,
-                "skypeId": skypeId
-            });
-
-            if (command.interval !== 'now') {
-                if (command.target === "me") {
-                    bot.reply("Scheduled new reminder job for you :)", true);
-                } else if (command.target === "all") {
-                    bot.reply("Scheduled new reminder job for all (whew)", true);
-                }
-            }
-        } else if (command.name === 'repeat') {
-            console.log(`Scheduling repeat notification to be sent with content:\n\n${command.content}`);
-
-            agenda.every(command.interval, 'sendNotifications', { 
-                "content": command.content,
-                "target": "me",
-                "skypeId": skypeId
-            });
-
-            bot.reply("Scheduled repeat job for you :)", true)
-        } else if (command.name === 'abort') {
-            agenda.schedule('now', 'abortNotifications', {
-                "skypeId": skypeId
-            });
-
-            // TODO: Change a message in return
-            botService.send(skypeId, "Sadly, I can't perform this action yet, \nAleksey is very tired after work and has no time to play with me :(");
-        } else if (command.name === 'unsubscribe') {
-            agenda.schedule('now', 'removeContact', {
-                "skypeId": skypeId
-            });
-
-            bot.reply("It's sad to see you go, hope you will return someday ;(", true);
-        }
-    } catch (e) {
-        console.log("Failed to parse command", e);
+    let command = commandParser.parseCommand(content);
+    if (command == null) {
+        console.log("Failed to parse command: ", e);
 
         let helpMessage = "Usage:\n\n";
         helpMessage += "schedule | in 1 minute | me | Retro was brilliant!\n";
@@ -101,6 +60,48 @@ botService.on('personalMessage', (bot, data) => {
         helpMessage += "Or you can also unsubscribe if I pissed you off by typing 'unsubscribe' to me.\n\n"
         helpMessage += "If you have any questions or suggestions for improvements, please contact Aleksey! (punch)\nThanks, mate! :)";
         bot.reply(helpMessage, true);
+        return;
+    }
+
+    if (command.name === 'schedule') {
+        console.log(`Scheduling notification to be sent with content:\n\n${command.content}`);
+
+        agenda.schedule(command.interval, 'sendNotifications', { 
+            "content": command.content,
+            "target": command.target,
+            "skypeId": skypeId
+        });
+
+        if (command.interval !== 'now') {
+            if (command.target === "me") {
+                bot.reply("Scheduled new reminder job for you :)", true);
+            } else if (command.target === "all") {
+                bot.reply("Scheduled new reminder job for all (whew)", true);
+            }
+        }
+    } else if (command.name === 'repeat') {
+        console.log(`Scheduling repeat notification to be sent with content:\n\n${command.content}`);
+
+        agenda.every(command.interval, 'sendNotifications', { 
+            "content": command.content,
+            "target": "me",
+            "skypeId": skypeId
+        });
+
+        bot.reply("Scheduled repeat job for you :)", true)
+    } else if (command.name === 'abort') {
+        agenda.schedule('now', 'abortNotifications', {
+            "skypeId": skypeId
+        });
+
+            // TODO: Change a message in return
+        botService.send(skypeId, "Sadly, I can't perform this action yet, \nAleksey is very tired after work and has no time to play with me :(");
+    } else if (command.name === 'unsubscribe') {
+        agenda.schedule('now', 'removeContact', {
+            "skypeId": skypeId
+        });
+
+        bot.reply("It's sad to see you go, hope you will return someday ;(", true);
     }
 });
 

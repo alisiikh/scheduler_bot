@@ -6,8 +6,11 @@ const SkypeAddress = require('./db').SkypeAddress;
 const appCfg = require('./config');
 
 const agenda = new Agenda({ 
-	db: { address: appCfg.databaseURL },
-	processEvery: '30 seconds'
+	db: { 
+		address: appCfg.databaseURL
+	},
+	processEvery: '30 seconds',
+	maxConcurrency: 20
 });
 
 agenda.define('sendNotifications', (job, done) => {
@@ -35,6 +38,8 @@ agenda.define('sendNotifications', (job, done) => {
 					botService.send(skypeAddress.skypeId, `A message from ${initiator.displayName}:\n\n${content}`);
 				});
 			});
+		} else {
+			console.log("No target specified for sendNotifications job");
 		}
 	});
 });
@@ -60,7 +65,17 @@ agenda.define('removeContact', (job, done) => {
 agenda.define('abortNotifications', (job, done) => {
 	let jobData = job.attrs.data;
 	let skypeId = jobData.skypeId;
-	// TODO: Iterate through user's jobs and send back information about removed jobs
+
+	agenda.jobs({ name: 'sendNotifications' }, function(err, jobs) {
+		if (jobs && jobs.length > 0) {
+			jobs.forEach((job) => {
+				job.remove();
+			});
+		}
+		done();
+	});
+	
+	botService.send(skypeId, "Cleared your jobs history and current running jobs");
 });
 
 agenda.on('ready', () => {
