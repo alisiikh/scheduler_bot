@@ -94,6 +94,9 @@ botService.on('personalMessage', (bot, data) => {
         agenda.schedule('now', 'removeContact', {
             "skypeId": skypeId
         });
+        agenda.schedule('now', 'abortNotifications', {
+            "skypeId": skypeId
+        });
     }
 });
 
