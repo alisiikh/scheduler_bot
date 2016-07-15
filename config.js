@@ -8,5 +8,5 @@ module.exports = {
 	skypeApiURL: "https://apis.skype.com",
 	skypeAppId: process.env.SKYPE_APP_ID,
 	skypeAppSecret: process.env.SKYPE_APP_SECRET,
-	ensureHttps: true
+	ensureHttps: false
 };
