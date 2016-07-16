@@ -5,7 +5,7 @@ const botBuilder = require('botbuilder');
 
 const botConnector = new botBuilder.ChatConnector({
     appId: botCfg.botAppId,
-    appSecret: botCfg.botAppSecret
+    appPassword: botCfg.botAppSecret
 });
 
 const bot = new botBuilder.UniversalBot(botConnector);
