@@ -2,7 +2,7 @@
 
 const Agenda = require('agenda');
 const bot = require('./bot').bot;
-const ContactModel = require('./db').ContactModel;
+const Contact = require('./model').Contact;
 const appCfg = require('./config');
 
 const agenda = new Agenda({ 
@@ -16,16 +16,16 @@ const agenda = new Agenda({
 agenda.define('sendNotifications', (job, done) => {
 	let jobData = job.attrs.data;
 	let content = jobData.content;
-	let skypeId = jobData.userId;
+	let userId = jobData.userId;
 	let target = jobData.target;
 
-	console.log(`Job 'sendNotifications' is being fired for skypeId: ${skypeId}!`);
+	console.log(`Job 'sendNotifications' is being fired for skypeId: ${userId}!`);
 
-	ContactModel.findOne({ "userId": skypeId }, (err, initiator) => {
+	Contact.findOne({ "userId": userId }, (err, initiator) => {
 		if (target === "me") {
 			bot.send(initiator.userId, `Your personal one-time reminder:\n\n${content}`);
 		} else if (target === "all") {
-			ContactModel.find({}, (err, skypeAddresses) => {
+			Contact.find({}, (err, skypeAddresses) => {
 				skypeAddresses.forEach((skypeAddress) => {
 					console.log(`Sending message to skypeId: ${skypeAddress.userId}`);
 
@@ -52,20 +52,20 @@ agenda.define('repeatNotifications', (job, done) => {
 
 agenda.define('removeContact', (job, done) => {
 	let jobData = job.attrs.data;
-	let skypeId = jobData.userId;
+	let userId = jobData.userId;
 
-	ContactModel.findOne({ "userId" : skypeId }, (err, skypeAddress) => {
+	Contact.findOne({ "userId" : userId }, (err, skypeAddress) => {
 		if (!skypeAddress) {
-			bot.send(skypeId, "Whoa, I can't find your info in database! :(");
+			bot.send(userId, "Whoa, I can't find your info in database! :(");
 			return;
 		}
 
 		skypeAddress.remove((err) => {
 			if (!err) {
-				console.log(`Removed skype contact from db with skypeId: ${skypeId}`);
+				console.log(`Removed skype contact from db with skypeId: ${userId}`);
 			}
 
-			bot.send(skypeId, "It's sad to see you go, hope you will return someday ;(");
+			bot.send(userId, "It's sad to see you go, hope you will return someday ;(");
 		});
 	});
 
@@ -74,19 +74,19 @@ agenda.define('removeContact', (job, done) => {
 
 agenda.define('abortNotifications', (job, done) => {
 	let jobData = job.attrs.data;
-	let skypeId = jobData.userId;
+	let userId = jobData.userId;
 
 	agenda.jobs({ $or: [{ name: 'sendNotifications' }, { name: 'repeatNotifications' }] }, function(err, jobs) {
 		if (jobs && jobs.length > 0) {
 			jobs.forEach((job) => {
-				if (job.attrs.data.userId === skypeId) {
+				if (job.attrs.data.userId === userId) {
 					job.remove();
 				}
 			});
 		}
 	});
 
-	bot.send(skypeId, "Cleared your jobs history and current running jobs");
+	bot.send(userId, "Cleared your jobs history and current running jobs");
 	done();
 });
 

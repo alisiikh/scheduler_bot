@@ -11,8 +11,8 @@ const botConnector = new botBuilder.ChatConnector({
 const bot = new botBuilder.UniversalBot(botConnector);
 
 module.exports = {
-    botBuilder,
     bot,
+    botBuilder,
     botConnector
 };
 
