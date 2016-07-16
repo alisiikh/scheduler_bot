@@ -7,6 +7,9 @@ const botBuilder = require('./bot').botBuilder;
 const agenda = require('./agenda');
 const Contact = require('./model').Contact;
 const botCfg = require('./config').bot;
+const intents = new botBuilder.IntentDialog();
+
+const commands = ["schedule", "repeat", "cancel"];
 
 bot.dialog('/', [
     (session, args, next) => {
@@ -16,7 +19,7 @@ bot.dialog('/', [
         const onContactResolved = (contact) => {
             session.userData.user = contact;
 
-            session.beginDialog('/command');
+            next();
         };
 
         if (!session.userData.user) {
@@ -39,34 +42,23 @@ bot.dialog('/', [
         } else {
             onContactResolved(session.userData.user);
         }
-    }
-]);
-
-bot.dialog('/command', [
-    (session, args) => {
-        if (!session.dialogData.command) {
-            const commands = ["schedule", "repeat", "cancel"];
-            if (botCfg.choiceEnabled) {
-                botBuilder.Prompts.choice(session, "Make your choice, please:", commands);
-            } else {
-                botBuilder.Prompts.text(session, `Choose a command from: \n\n[${commands.join(', ')}]`)
-            }
-        }
     },
     (session, args) => {
-        const command = botCfg.choiceEnabled ? args.response.entity : args.response;
+        const prompt = `Choose a command from: \n\n[${commands.join(', ')}]`;
+        session.beginDialog('/command', {
+            prompt: prompt,
+            retryPrompt: `Sorry, I don't understand you, please try again!\n\n${prompt}`
+        });
+    },
+    (session, args) => {
+        session.dialogData.command = args.response;
 
-        if (/^(schedule|repeat|cancel)$/i.test(command)) {
-            session.dialogData.command = command;
-
-            session.beginDialog(`/command/${session.dialogData.command}`);
-        } else {
-            session.send("Sorry, I don't understand you, please try again!");
-            session.endDialog();
-            session.beginDialog('/command');
-        }
+        session.beginDialog(`/command/${session.dialogData.command}`);
     }
 ]);
+
+bot.dialog('/command', botBuilder.DialogAction.validatedPrompt(botBuilder.PromptType.text,
+    (response) => /^(schedule|repeat|cancel)$/i.test(response)));
 
 bot.dialog('/command/schedule', [
     (session) => {
