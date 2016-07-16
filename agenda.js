@@ -65,7 +65,7 @@ agenda.define('abortNotifications', (job, done) => {
 
         const message = new botBuilder.Message().address(address);
         if (numRemoved > 0) {
-            message.text(`Stopped ${jobs.length} jobs.`);
+            message.text(`Stopped ${jobs.length} running jobs.`);
         } else {
             message.text("You have no running jobs, nothing to abort.");
         }
