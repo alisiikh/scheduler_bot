@@ -1,6 +1,6 @@
 'use strict';
 
-const botCfg = require('./config').botCfg;
+const botCfg = require('./config').bot;
 const botBuilder = require('botbuilder');
 
 const botConnector = new botBuilder.ChatConnector({

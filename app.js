@@ -6,6 +6,7 @@ const bot = require('./bot').bot;
 const botBuilder = require('./bot').botBuilder;
 const agenda = require('./agenda');
 const Contact = require('./model').Contact;
+const botCfg = require('./config').bot;
 
 bot.dialog('/', [
     (session, args, next) => {
@@ -44,12 +45,19 @@ bot.dialog('/', [
 bot.dialog('/command', [
     (session, args) => {
         if (!session.dialogData.command) {
-            botBuilder.Prompts.choice(session, "Make your choice, please:", ["schedule", "repeat", "cancel"]);
+            const commands = ["schedule", "repeat", "cancel"];
+            if (botCfg.choiceEnabled) {
+                botBuilder.Prompts.choice(session, "Make your choice, please:", commands);
+            } else {
+                botBuilder.Prompts.text(session, `Choose a command from: \n\n[${commands.join(', ')}]`)
+            }
         }
     },
     (session, args) => {
-        if (args.response.entity) {
-            session.dialogData.command = args.response.entity;
+        const command = botCfg.choiceEnabled ? args.response.entity : args.response;
+
+        if (/^(schedule|repeat|cancel)$/i.test(command)) {
+            session.dialogData.command = command;
 
             session.beginDialog(`/command/${session.dialogData.command}`);
         } else {
