@@ -1,35 +1,82 @@
 'use strict';
 
+const async = require('async');
 const server = require('./server');
 const bot = require('./bot').bot;
 const botBuilder = require('./bot').botBuilder;
 const agenda = require('./agenda');
+const Contact = require('./model').Contact;
 
 bot.dialog('/', [
     (session, args, next) => {
-        console.log("/ dialog started");
+        const message = session.message;
+        const user = message.user;
 
-        if (!session.userData.name) {
-            session.beginDialog('/profile');
+        const onContactResolved = (contact) => {
+            session.userData.user = contact;
+
+            session.beginDialog('/command');
+        };
+
+        if (!session.userData.user) {
+            Contact.findOne({userId: user.id}, (err, contact) => {
+                if (!contact) {
+                    const contact = new Contact({
+                        userId: user.id,
+                        name: user.name,
+                        dateCreated: new Date()
+                    });
+                    contact.save().then((contact) => {
+                        session.send(`Hello, ${user.name}!`);
+
+                        onContactResolved(contact);
+                    });
+                } else {
+                    onContactResolved(contact);
+                }
+            });
         } else {
-            next();
+            onContactResolved(session.userData.user);
         }
-    },
-    (session, results) => {
-        console.log(`Final result is ${session.userData.name}`);
-        session.send('Hello %s!', session.userData.name);
     }
 ]);
 
-bot.dialog('/profile', [
-    (session) => {
-        console.log("/profile dialog started");
-
-        botBuilder.Prompts.text(session, 'Hi! What is your name?');
+bot.dialog('/command', [
+    (session, args) => {
+        if (!session.dialogData.command) {
+            botBuilder.Prompts.text(session, "Commands:\n\tschedule, repeat, cancel\n\nType in your choice, please:");
+        }
     },
-    (session, results) => {
-        console.log(`username is: ${results.response}`);
-        session.userData.name = results.response;
+    (session, args) => {
+        if (/^(schedule|repeat|cancel)$/i.test(args.response)) {
+            session.dialogData.command = args.response;
+
+            session.beginDialog(`/command/${session.dialogData.command}`);
+        } else {
+            session.send("Sorry, I don't understand you, please try again!");
+            session.endDialog();
+            session.beginDialog('/command');
+        }
+    }
+]);
+
+bot.dialog('/command/schedule', [
+    (session) => {
+        session.send("So you chose schedule command, nice!");
+        session.endDialog();
+    }
+]);
+
+bot.dialog('/command/repeat', [
+    (session) => {
+        session.send("So you chose repeat command, nice!");
+        session.endDialog();
+    }
+]);
+
+bot.dialog('/command/cancel', [
+    (session) => {
+        session.send("So you chose cancel command, nice!");
         session.endDialog();
     }
 ]);
