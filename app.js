@@ -5,10 +5,11 @@ const server = require('./server');
 const bot = require('./bot').bot;
 const botBuilder = require('./bot').botBuilder;
 const agenda = require('./agenda');
+const humanInterval = require('human-interval');
 const Contact = require('./model').Contact;
 const botCfg = require('./config').bot;
 const intents = new botBuilder.IntentDialog();
-const botCommands = ["schedule", "repeat", "cancel"];
+const botCommands = ["schedule", "repeat", "abort"];
 
 
 bot.on('conversationUpdate', function (message) {
@@ -64,7 +65,7 @@ bot.dialog('/', intents);
 
 intents.onDefault([
     (session, args, next) => {
-        console.log("Ok, default action, I do nothing.");
+        console.log(`Got the message: '${session.message.text}', doing nothing.`);
     }
 ]);
 
@@ -109,32 +110,100 @@ intents.matches(/^start$/i, [
         if (!args.response) {
             session.endDialog("You cancelled.");
         } else {
-            session.dialogData.command = args.response;
+            const command = args.response;
+            session.userData.command = command;
 
-            session.beginDialog(`/command/${session.dialogData.command}`);
+            session.beginDialog(`/command/${command}`);
         }
     }
 ]);
 
-intents.matches(/^stop$/i, [
+intents.matches(/kapusta/gi, [
     (session, args, next) => {
-        session.send("Ahah, stop?! Are you serious?! :D");
+        session.send(`Who said 'kapusta'? How dare you, mr. ${session.message.user.name}?!`);
     }
 ]);
 
 bot.dialog('/command', botBuilder.DialogAction.validatedPrompt(
-    botBuilder.PromptType.text, (response) => /^(schedule|repeat)$/i.test(response)));
+    botBuilder.PromptType.text, (response) => /^(schedule|repeat|abort)$/i.test(response)));
 
 bot.dialog('/command/schedule', [
     (session) => {
-        session.send("So you chose schedule command, nice!");
-        session.endDialog();
+        botBuilder.Prompts.text(session, 'Type in some time interval, \n\ne.g. 5 minutes, 10 seconds, 8 hours, etc.');
+    },
+    (session, args, next) => {
+        if (args && args.response) {
+            if (isNaN(humanInterval(args.response))) {
+                session.endDialog("Incorrect interval. Operation cancelled.");
+            } else {
+                session.userData.interval = args.response;
+
+                next();
+            }
+        } else {
+            session.endDialog("You cancelled.");
+        }
+    },
+    (session, args, next) => {
+        botBuilder.Prompts.text(session, 'Type in the content which you want to schedule');
+    },
+    (session, args, next) => {
+        if (args && args.response) {
+            session.userData.content = args.response;
+
+            agenda.schedule(session.userData.interval, 'sendNotifications', {
+                address: session.message.address,
+                content: session.userData.content,
+            });
+
+            session.endDialog(`Notification has been scheduled, and will appear in '${session.userData.interval}'`);
+        } else {
+            session.endDialog("You cancelled.");
+        }
     }
 ]);
 
 bot.dialog('/command/repeat', [
     (session) => {
-        session.send("So you chose repeat command, nice!");
+        botBuilder.Prompts.text(session, 'Type in some time interval, \n\ne.g. 5 minutes, 10 seconds, 8 hours, etc.');
+    },
+    (session, args, next) => {
+        if (args && args.response) {
+            if (isNaN(humanInterval(args.response))) {
+                session.endDialog("Incorrect interval. Operation cancelled.");
+            } else {
+                session.userData.interval = args.response;
+
+                next();
+            }
+        } else {
+            session.endDialog("You cancelled.");
+        }
+    },
+    (session, args, next) => {
+        botBuilder.Prompts.text(session, 'Type in the content which you want to repeat');
+    },
+    (session, args, next) => {
+        if (args && args.response) {
+            session.userData.content = args.response;
+
+            agenda.schedule(session.userData.interval, 'repeatNotifications', {
+                address: session.message.address,
+                content: session.userData.content,
+            });
+
+            session.endDialog(`Notification has been scheduled for repeating, and will appear every '${session.userData.interval}'`);
+        } else {
+            session.endDialog("You cancelled.");
+        }
+    }
+]);
+
+bot.dialog('/command/abort', [
+    (session) => {
+        agenda.schedule('now', 'abortNotifications', {
+            address: session.message.address,
+        });
         session.endDialog();
     }
 ]);

@@ -1,98 +1,85 @@
 'use strict';
 
-const Agenda = require('agenda');
-const bot = require('./bot').bot;
-const Contact = require('./model').Contact;
-const appCfg = require('./config');
 
-const agenda = new Agenda({ 
-	db: { 
-		address: appCfg.databaseURL
-	},
-	processEvery: '30 seconds',
-	maxConcurrency: 20
+const bot = require('./bot').bot;
+const botBuilder = require('./bot').botBuilder;
+const Contact = require('./model').Contact;
+const agenda = require('agenda')({
+    db: {
+        address: require('./config').databaseURL
+    },
+    processEvery: '30 seconds',
+    maxConcurrency: 20
 });
 
 agenda.define('sendNotifications', (job, done) => {
-	let jobData = job.attrs.data;
-	let content = jobData.content;
-	let userId = jobData.userId;
-	let target = jobData.target;
+    const jobData = job.attrs.data;
+    const content = jobData.content;
+    const address = jobData.address;
 
-	console.log(`Job 'sendNotifications' is being fired for skypeId: ${userId}!`);
+    console.log(`Job 'sendNotifications' is being fired for ${address.name}!`);
 
-	Contact.findOne({ "userId": userId }, (err, initiator) => {
-		if (target === "me") {
-			bot.send(initiator.userId, `Your personal one-time reminder:\n\n${content}`);
-		} else if (target === "all") {
-			Contact.find({}, (err, skypeAddresses) => {
-				skypeAddresses.forEach((skypeAddress) => {
-					console.log(`Sending message to skypeId: ${skypeAddress.userId}`);
+    var message = new botBuilder.Message()
+        .address(address)
+        .text(`Your one-time reminder:\n\n${content}`);
+    bot.send(message);
 
-					bot.send(skypeAddress.userId, `A message from ${initiator.name}:\n\n${content}`);
-				});
-			});
-		} else {
-			console.log("No target specified for sendNotifications job");
-		}
-	});
-
-	done();
+    done();
 });
 
 agenda.define('repeatNotifications', (job, done) => {
-	let jobData = job.attrs.data;
-	let content = jobData.content;
-	let skypeId = jobData.userId;
+    let jobData = job.attrs.data;
+    let content = jobData.content;
+    let address = jobData.address;
 
-	bot.send(skypeId, `Your personal repeatable reminder:\n\n${content}`);
+    console.log(`Job 'repeatNotifications' is being fired for ${address.name}!`);
 
-	done();
-});
+    var message = new botBuilder.Message()
+        .address(address)
+        .text(`Your repeatable reminder:\n\n${content}`);
+    bot.send(message);
 
-agenda.define('removeContact', (job, done) => {
-	let jobData = job.attrs.data;
-	let userId = jobData.userId;
-
-	Contact.findOne({ "userId" : userId }, (err, skypeAddress) => {
-		if (!skypeAddress) {
-			bot.send(userId, "Whoa, I can't find your info in database! :(");
-			return;
-		}
-
-		skypeAddress.remove((err) => {
-			if (!err) {
-				console.log(`Removed skype contact from db with skypeId: ${userId}`);
-			}
-
-			bot.send(userId, "It's sad to see you go, hope you will return someday ;(");
-		});
-	});
-
-	done();
+    done();
 });
 
 agenda.define('abortNotifications', (job, done) => {
-	let jobData = job.attrs.data;
-	let userId = jobData.userId;
+    let jobData = job.attrs.data;
+    let address = jobData.address;
 
-	agenda.jobs({ $or: [{ name: 'sendNotifications' }, { name: 'repeatNotifications' }] }, function(err, jobs) {
-		if (jobs && jobs.length > 0) {
-			jobs.forEach((job) => {
-				if (job.attrs.data.userId === userId) {
-					job.remove();
-				}
-			});
-		}
-	});
+    let numRemoved = 0;
 
-	bot.send(userId, "Cleared your jobs history and current running jobs");
-	done();
+    agenda.jobs({
+        nextRunAt: { $ne: null },
+        $or: [{name: 'sendNotifications'}, {name: 'repeatNotifications'}]
+    }, function (err, jobs) {
+
+        if (jobs && jobs.length > 0) {
+            jobs.forEach((job) => {
+                if (job.attrs.data.address.user.id === address.user.id) {
+                    job.attrs.nextRunAt = null;
+                    job.save();
+                    numRemoved++;
+                }
+            });
+        }
+
+        const message = new botBuilder.Message().address(address);
+        if (numRemoved > 0) {
+            message.text(`Stopped ${jobs.length} jobs.`);
+        } else {
+            message.text("You have no running jobs, nothing to abort.");
+        }
+        bot.send(message);
+
+        done();
+    });
+
+
 });
 
 agenda.on('ready', () => {
-	console.log("Agenda successfully started and ready to receive job requests.");	
-	agenda.start();
+    console.log("Agenda successfully started and ready to receive job requests.");
+    agenda.start();
 });
 
 module.exports = agenda;
