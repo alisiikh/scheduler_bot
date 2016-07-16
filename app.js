@@ -8,21 +8,77 @@ const agenda = require('./agenda');
 const Contact = require('./model').Contact;
 const botCfg = require('./config').bot;
 const intents = new botBuilder.IntentDialog();
+const botCommands = ["schedule", "repeat", "cancel"];
 
-const commands = ["schedule", "repeat", "cancel"];
 
-bot.dialog('/', [
+bot.on('conversationUpdate', function (message) {
+    // Check for group conversations
+    if (message.address.conversation.isGroup) {
+        // Send a hello message when bot is added
+        if (message.membersAdded) {
+            message.membersAdded.forEach(function (identity) {
+                if (identity.id === message.address.bot.id) {
+                    var reply = new botBuilder.Message()
+                        .address(message.address)
+                        .text("Hello everyone!");
+                    bot.send(reply);
+                }
+            });
+        }
+
+        // Send a goodbye message when bot is removed
+        if (message.membersRemoved) {
+            message.membersRemoved.forEach(function (identity) {
+                if (identity.id === message.address.bot.id) {
+                    var reply = new botBuilder.Message()
+                        .address(message.address)
+                        .text("Goodbye");
+                    bot.send(reply);
+                }
+            });
+        }
+    }
+});
+
+bot.on('contactRelationUpdate', function (message) {
+    if (message.action === 'add') {
+        var name = message.user ? message.user.name : null;
+        var reply = new botBuilder.Message()
+            .address(message.address)
+            .text("Hello %s... Thanks for having me. Say 'start' to start scheduling.", name || 'there');
+        bot.send(reply);
+    } else {
+        // delete their data
+    }
+});
+
+bot.on('typing', function (message) {
+    // User is typing
+});
+
+bot.on('deleteUserData', function (message) {
+    // User asked to delete their data
+});
+
+bot.dialog('/', intents);
+
+intents.onDefault([
+    (session, args, next) => {
+        console.log("Ok, default action, I do nothing.");
+    }
+]);
+
+intents.matches(/^start$/i, [
     (session, args, next) => {
         const message = session.message;
         const user = message.user;
 
-        const onContactResolved = (contact) => {
-            session.userData.user = contact;
-
+        const onContactSync = (contact) => {
+            session.userData.contact = contact;
             next();
         };
 
-        if (!session.userData.user) {
+        if (!session.userData.contact) {
             Contact.findOne({userId: user.id}, (err, contact) => {
                 if (!contact) {
                     const contact = new Contact({
@@ -31,34 +87,43 @@ bot.dialog('/', [
                         dateCreated: new Date()
                     });
                     contact.save().then((contact) => {
-                        session.send(`Hello, ${user.name}!`);
-
-                        onContactResolved(contact);
+                        onContactSync(contact);
                     });
                 } else {
-                    onContactResolved(contact);
+                    onContactSync(contact);
                 }
             });
         } else {
-            onContactResolved(session.userData.user);
+            next();
         }
     },
     (session, args) => {
-        const prompt = `Choose a command from: \n\n[${commands.join(', ')}]`;
+        const prompt = `Choose a command from: \n\n[${botCommands.join(', ')}]`;
         session.beginDialog('/command', {
             prompt: prompt,
-            retryPrompt: `Sorry, I don't understand you, please try again!\n\n${prompt}`
+            retryPrompt: `Sorry, I don't understand you, please try again!\n\n${prompt}`,
+            maxRetries: 3
         });
     },
     (session, args) => {
-        session.dialogData.command = args.response;
+        if (!args.response) {
+            session.endDialog("You cancelled.");
+        } else {
+            session.dialogData.command = args.response;
 
-        session.beginDialog(`/command/${session.dialogData.command}`);
+            session.beginDialog(`/command/${session.dialogData.command}`);
+        }
     }
 ]);
 
-bot.dialog('/command', botBuilder.DialogAction.validatedPrompt(botBuilder.PromptType.text,
-    (response) => /^(schedule|repeat|cancel)$/i.test(response)));
+intents.matches(/^stop$/i, [
+    (session, args, next) => {
+        session.send("Ahah, stop?! Are you serious?! :D");
+    }
+]);
+
+bot.dialog('/command', botBuilder.DialogAction.validatedPrompt(
+    botBuilder.PromptType.text, (response) => /^(schedule|repeat)$/i.test(response)));
 
 bot.dialog('/command/schedule', [
     (session) => {
@@ -70,13 +135,6 @@ bot.dialog('/command/schedule', [
 bot.dialog('/command/repeat', [
     (session) => {
         session.send("So you chose repeat command, nice!");
-        session.endDialog();
-    }
-]);
-
-bot.dialog('/command/cancel', [
-    (session) => {
-        session.send("So you chose cancel command, nice!");
         session.endDialog();
     }
 ]);
