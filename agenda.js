@@ -2,7 +2,7 @@
 
 const Agenda = require('agenda');
 const bot = require('./bot').bot;
-const ContactModel = require('./db').ContactModel;
+const Contact = require('./model').Contact;
 const appCfg = require('./config');
 
 const agenda = new Agenda({ 
@@ -21,11 +21,11 @@ agenda.define('sendNotifications', (job, done) => {
 
 	console.log(`Job 'sendNotifications' is being fired for skypeId: ${skypeId}!`);
 
-	ContactModel.findOne({ "userId": skypeId }, (err, initiator) => {
+	Contact.findOne({ "userId": skypeId }, (err, initiator) => {
 		if (target === "me") {
 			bot.send(initiator.userId, `Your personal one-time reminder:\n\n${content}`);
 		} else if (target === "all") {
-			ContactModel.find({}, (err, skypeAddresses) => {
+			Contact.find({}, (err, skypeAddresses) => {
 				skypeAddresses.forEach((skypeAddress) => {
 					console.log(`Sending message to skypeId: ${skypeAddress.userId}`);
 
@@ -54,7 +54,7 @@ agenda.define('removeContact', (job, done) => {
 	let jobData = job.attrs.data;
 	let skypeId = jobData.userId;
 
-	ContactModel.findOne({ "userId" : skypeId }, (err, skypeAddress) => {
+	Contact.findOne({ "userId" : skypeId }, (err, skypeAddress) => {
 		if (!skypeAddress) {
 			bot.send(skypeId, "Whoa, I can't find your info in database! :(");
 			return;

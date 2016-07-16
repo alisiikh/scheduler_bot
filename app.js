@@ -1,11 +1,9 @@
 'use strict';
 
 const server = require('./server');
-
 const bot = require('./bot').bot;
 const botBuilder = require('./bot').botBuilder;
 const agenda = require('./agenda');
-// const ContactModel = require('./db').ContactModel;
 
 bot.dialog('/', [
     function (session, args, next) {
@@ -29,5 +27,3 @@ bot.dialog('/profile', [
         session.endDialog();
     }
 ]);
-
-
