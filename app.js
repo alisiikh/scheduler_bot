@@ -44,7 +44,7 @@ bot.dialog('/', [
 bot.dialog('/command', [
     (session, args) => {
         if (!session.dialogData.command) {
-            botBuilder.Prompts.text(session, "Commands:\n\tschedule, repeat, cancel\n\nType in your choice, please:");
+            botBuilder.Prompts.text(session, "Commands:\n\n\tschedule, repeat, cancel\n\nType in your choice, please:");
         }
     },
     (session, args) => {
