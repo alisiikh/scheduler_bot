@@ -44,12 +44,12 @@ bot.dialog('/', [
 bot.dialog('/command', [
     (session, args) => {
         if (!session.dialogData.command) {
-            botBuilder.Prompts.text(session, "Commands:\n\n\tschedule, repeat, cancel\n\nType in your choice, please:");
+            botBuilder.Prompts.choice(session, "Make your choice, please:", ["schedule", "repeat", "cancel"]);
         }
     },
     (session, args) => {
-        if (/^(schedule|repeat|cancel)$/i.test(args.response)) {
-            session.dialogData.command = args.response;
+        if (args.response.entity) {
+            session.dialogData.command = args.response.entity;
 
             session.beginDialog(`/command/${session.dialogData.command}`);
         } else {
