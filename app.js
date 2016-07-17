@@ -6,9 +6,9 @@ const bot = require('./bot').bot;
 const botBuilder = require('./bot').botBuilder;
 const agenda = require('./agenda');
 const humanInterval = require('human-interval');
+const cronParser = require('cron-parser');
 const Contact = require('./model').Contact;
 const intents = new botBuilder.IntentDialog();
-const botCommands = ["schedule", "repeat", "abort"];
 
 
 bot.on('conversationUpdate', function (message) {
@@ -103,7 +103,7 @@ intents.matches(/^start$/i, [
         }
     },
     (session, args) => {
-        const prompt = `Choose a command from: \n\n[${botCommands.join(', ')}]`;
+        const prompt = `Choose a command from: \n\n[${["schedule", "repeat", "abort"].join(', ')}]`;
         session.beginDialog('/command', {
             prompt: prompt,
             retryPrompt: `Sorry, I don't understand you, please try again!\n\n${prompt}`,
@@ -173,7 +173,17 @@ bot.dialog('/command/repeat', [
     },
     (session, args, next) => {
         if (args && args.response) {
-            if (isNaN(humanInterval(args.response))) {
+            let intervalCorrect = !isNaN(humanInterval(args.response));
+            if (!intervalCorrect) {
+                try {
+                    cronParser.parseExpression(args.response);
+                    intervalCorrect = true;
+                } catch (e) {
+                    console.log(`User typed in incorrect interval which is not cron expression as well: ${args.response}`);
+                }
+            }
+
+            if (!intervalCorrect) {
                 session.endDialog("Incorrect interval. Operation cancelled.");
             } else {
                 session.userData.interval = args.response;
@@ -191,7 +201,7 @@ bot.dialog('/command/repeat', [
         if (args && args.response) {
             session.userData.content = args.response;
 
-            agenda.schedule(session.userData.interval, 'repeatNotifications', {
+            agenda.every(session.userData.interval, 'repeatNotifications', {
                 address: session.message.address,
                 content: session.userData.content,
             });
