@@ -167,7 +167,7 @@ bot.dialog('/command/schedule', [
                 content: session.userData.content,
             });
 
-            session.endDialog(`Notification has been scheduled, and will appear in '${session.userData.interval}'`);
+            session.endDialog(`Notification has been scheduled, I will send you back in '${session.userData.interval}'`);
         } else {
             session.endDialog("You cancelled.");
         }
@@ -213,7 +213,7 @@ bot.dialog('/command/repeat', [
                 content: session.userData.content,
             });
 
-            session.endDialog(`Notification has been scheduled for repeating, and will appear every '${session.userData.interval}'`);
+            session.endDialog(`Notification has been scheduled for repeating, I will send you back every '${session.userData.interval}'`);
         } else {
             session.endDialog("You cancelled.");
         }
