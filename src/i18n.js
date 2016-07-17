@@ -8,7 +8,6 @@ i18n.configure({
     register: global,
     directory: __dirname + "/locales",
 
-
     // setting of log level DEBUG - default to require('debug')('i18n:debug')
     logDebugFn: function (msg) {
         console.log('debug', msg);

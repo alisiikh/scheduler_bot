@@ -1,13 +1,13 @@
 'use strict';
 
 const async = require('async');
-const server = require('./server');
-const bot = require('./bot').bot;
-const botBuilder = require('./bot').botBuilder;
-const agenda = require('./agenda');
+const server = require('./src/server');
+const bot = require('./src/bot').bot;
+const botBuilder = require('./src/bot').botBuilder;
+const agenda = require('./src/agenda');
 const humanInterval = require('human-interval');
 const cronParser = require('cron-parser');
-const Contact = require('./model').Contact;
+const Contact = require('./src/model').Contact;
 const intents = new botBuilder.IntentDialog();
 
 

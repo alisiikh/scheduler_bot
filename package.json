@@ -1,14 +1,14 @@
 {
-  "name": "flowfact-skype-bot",
+  "name": "scheduler-bot",
   "version": "1.0.0",
-  "description": "FlowFact Skype Bot",
+  "description": "Scheduler BOT built on top of Bot Framework",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node --debug app.js"
+    "start": "node --debug index.js"
   },
   "keywords": [
-    "flowfact",
+    "scheduler",
     "skype",
     "bot"
   ],
