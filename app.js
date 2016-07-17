@@ -7,7 +7,6 @@ const botBuilder = require('./bot').botBuilder;
 const agenda = require('./agenda');
 const humanInterval = require('human-interval');
 const Contact = require('./model').Contact;
-const botCfg = require('./config').bot;
 const intents = new botBuilder.IntentDialog();
 const botCommands = ["schedule", "repeat", "abort"];
 
@@ -46,7 +45,7 @@ bot.on('contactRelationUpdate', function (message) {
         var name = message.user ? message.user.name : null;
         var reply = new botBuilder.Message()
             .address(message.address)
-            .text("Hello %s... Thanks for having me. Say 'start' to start scheduling.", name || 'there');
+            .text("Hello %s... Thanks for having me. \n\nType in 'start' command to start", name || 'there');
         bot.send(reply);
     } else {
         // delete their data
@@ -65,7 +64,12 @@ bot.dialog('/', intents);
 
 intents.onDefault([
     (session, args, next) => {
-        console.log(`Got the message: '${session.message.text}', doing nothing.`);
+        if (session.message.address.conversation.isGroup) {
+            console.log(`Received the message in group: '${session.message.text}', doing nothing`);
+        } else {
+            console.log(`Received the message: '${session.message.text}', sending a hint`);
+            session.send("To start, please type in 'start' command.");
+        }
     }
 ]);
 
