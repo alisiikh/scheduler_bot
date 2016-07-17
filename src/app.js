@@ -15,10 +15,13 @@ bot.on('conversationUpdate', function (message) {
         // Send a hello message when bot is added
         if (message.membersAdded) {
             message.membersAdded.forEach(function (identity) {
+                const reply = new botBuilder.Message()
+                    .address(message.address);
                 if (identity.id === message.address.bot.id) {
-                    var reply = new botBuilder.Message()
-                        .address(message.address)
-                        .text("Hello everyone!");
+                    reply.text("Hello everyone!");
+                    bot.send(reply);
+                } else {
+                    reply.text(`Welcome, ${identity.name}`);
                     bot.send(reply);
                 }
             });
@@ -27,10 +30,13 @@ bot.on('conversationUpdate', function (message) {
         // Send a goodbye message when bot is removed
         if (message.membersRemoved) {
             message.membersRemoved.forEach(function (identity) {
+                const reply = new botBuilder.Message()
+                    .address(message.address);
                 if (identity.id === message.address.bot.id) {
-                    var reply = new botBuilder.Message()
-                        .address(message.address)
-                        .text("Goodbye");
+                    reply.text("Goodbye");
+                    bot.send(reply);
+                } else {
+                    reply.text(`Farewell, ${identity.name}`);
                     bot.send(reply);
                 }
             });
