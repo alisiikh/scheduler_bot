@@ -108,8 +108,8 @@ intents.matches(/^start$/i, [
     },
     (session, args) => {
         const prompt = `Choose a command from:\n
-        'schedule' - schedule a delayed one-time notification\n
-        'repeat' - schedule a repeatable notification\n
+        'schedule' - schedule a delayed one-time notification
+        'repeat' - schedule a repeatable notification
         'abort' - abort all running scheduled jobs`;
         session.beginDialog('/command', {
             prompt: prompt,
