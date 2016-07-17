@@ -56,7 +56,7 @@ agenda.define('abortNotifications', (job, done) => {
         if (jobs && jobs.length > 0) {
             jobs.forEach((job) => {
                 if (job.attrs.data.address.user.id === address.user.id) {
-                    job.attrs.nextRunAt = null;
+                    job.disable();
                     job.save();
                     numRemoved++;
                 }
