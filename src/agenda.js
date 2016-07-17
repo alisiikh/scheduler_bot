@@ -55,9 +55,9 @@ agenda.define('abortNotifications', { priority: 'high' }, (job, done) => {
             message.text("Failed to remove jobs, error occurred");
         } else {
             if (numRemoved > 0) {
-                message.text(`Stopped ${numRemoved} running jobs.`);
+                message.text(`Stopped and removed ${numRemoved} running jobs.`);
             } else {
-                message.text("You have no running jobs, nothing to abort.");
+                message.text("You have no jobs, nothing to abort.");
             }
         }
 
