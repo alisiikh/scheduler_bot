@@ -107,7 +107,10 @@ intents.matches(/^start$/i, [
         }
     },
     (session, args) => {
-        const prompt = `Choose a command from: \n\n[${["schedule", "repeat", "abort"].join(', ')}]`;
+        const prompt = `Choose a command from:\n\n
+        'schedule' - schedule a delayed one-time notification\n\n
+        'repeat' - schedule a repeatable notification\n\n
+        'abort' - abort all running scheduled jobs`;
         session.beginDialog('/command', {
             prompt: prompt,
             retryPrompt: `Sorry, I don't understand you, please try again!\n\n${prompt}`,
