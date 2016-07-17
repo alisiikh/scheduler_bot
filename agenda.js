@@ -3,7 +3,6 @@
 
 const bot = require('./bot').bot;
 const botBuilder = require('./bot').botBuilder;
-const Contact = require('./model').Contact;
 const agenda = require('agenda')({
     db: {
         address: require('./config').databaseURL
@@ -17,7 +16,7 @@ agenda.define('sendNotifications', (job, done) => {
     const content = jobData.content;
     const address = jobData.address;
 
-    console.log(`Job 'sendNotifications' is being fired for ${address.name}!`);
+    console.log(`Job 'sendNotifications' is fired for ${address.user.name}!`);
 
     var message = new botBuilder.Message()
         .address(address)
@@ -32,7 +31,7 @@ agenda.define('repeatNotifications', (job, done) => {
     let content = jobData.content;
     let address = jobData.address;
 
-    console.log(`Job 'repeatNotifications' is being fired for ${address.name}!`);
+    console.log(`Job 'repeatNotifications' is fired for ${address.user.name}!`);
 
     var message = new botBuilder.Message()
         .address(address)
@@ -42,39 +41,30 @@ agenda.define('repeatNotifications', (job, done) => {
     done();
 });
 
-agenda.define('abortNotifications', (job, done) => {
+agenda.define('abortNotifications', { priority: 'high' }, (job, done) => {
     let jobData = job.attrs.data;
     let address = jobData.address;
 
-    let numRemoved = 0;
-
-    agenda.jobs({
-        nextRunAt: { $ne: null },
-        $or: [{name: 'sendNotifications'}, {name: 'repeatNotifications'}]
-    }, function (err, jobs) {
-
-        if (jobs && jobs.length > 0) {
-            jobs.forEach((job) => {
-                if (job.attrs.data.address.user.id === address.user.id) {
-                    job.disable();
-                    job.save();
-                    numRemoved++;
-                }
-            });
-        }
-
+    agenda.cancel({
+        $or: [{name: 'sendNotifications'}, {name: 'repeatNotifications'}],
+        'data.address.user.id': address.user.id
+    }, (err, numRemoved) => {
         const message = new botBuilder.Message().address(address);
-        if (numRemoved > 0) {
-            message.text(`Stopped ${jobs.length} running jobs.`);
-        } else {
-            message.text("You have no running jobs, nothing to abort.");
-        }
-        bot.send(message);
 
-        done();
+        if (err) {
+            message.text("Failed to remove jobs, error occurred");
+        } else {
+            if (numRemoved > 0) {
+                message.text(`Stopped ${numRemoved} running jobs.`);
+            } else {
+                message.text("You have no running jobs, nothing to abort.");
+            }
+        }
+
+        bot.send(message);
     });
 
-
+   done();
 });
 
 agenda.on('ready', () => {
