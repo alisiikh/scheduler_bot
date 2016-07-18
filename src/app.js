@@ -97,7 +97,8 @@ intents.matches(/^start$/i, [
                     const contact = new Contact({
                         userId: user.id,
                         name: user.name,
-                        dateCreated: new Date()
+                        channel: message.address.channelId,
+                        dateCreated: new Date(),
                     });
                     contact.save().then((contact) => {
                         onContactSync(contact);
@@ -112,8 +113,8 @@ intents.matches(/^start$/i, [
     },
     (session, args) => {
         const prompt = `Choose a command from:\n
-'schedule' - schedule a delayed one-time notification
-'repeat' - schedule a repeatable notification
+'schedule' - schedule a delayed one-time notification\n
+'repeat' - schedule a repeatable notification\n
 'abort' - abort all running scheduled jobs`;
         session.beginDialog('/command', {
             prompt: prompt,

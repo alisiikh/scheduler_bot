@@ -12,6 +12,7 @@ module.exports.Contact = mongoose.model('Contact',
 			type: String, 
 			index: { unique: true } 
 		},
+		channel: String,
 		name: String,
 		dateCreated: Date 
 	})
