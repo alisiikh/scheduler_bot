@@ -121,7 +121,7 @@ intents.matches(/^start$/i, [
         if (!args.response) {
             session.endDialog("You cancelled.");
         } else {
-            const command = args.response;
+            const command = args.response.toLowerCase();
             session.userData.command = command;
 
             session.beginDialog(`/command/${command}`);
