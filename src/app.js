@@ -64,6 +64,10 @@ bot.on('deleteUserData', function (message) {
     // User asked to delete their data
 });
 
+bot.on('groupMessage', function(message) {
+   console.log(message);
+});
+
 bot.dialog('/', intents);
 
 intents.onDefault([
