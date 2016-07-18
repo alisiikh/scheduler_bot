@@ -146,7 +146,7 @@ bot.dialog('/command/schedule', [
         if (args && args.response) {
             const interval = args.response.toLowerCase();
             if (isNaN(humanInterval(interval))) {
-                session.endDialog("Incorrect interval or you've cancelled.");
+                session.endDialog("You've entered an incorrect interval");
             } else {
                 session.userData.interval = interval;
 
