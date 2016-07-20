@@ -65,8 +65,8 @@ bot.on('deleteUserData', function (message) {
     // User asked to delete their data
 });
 
-bot.on('groupMessage', function(message) {
-   console.log(message);
+bot.on('groupMessage', function (message) {
+    console.log("Group message: " + message);
 });
 
 bot.dialog('/', intents);
@@ -236,34 +236,48 @@ bot.dialog('/command/abort', [
         agenda.jobs({
             $or: [{name: 'sendNotifications'}, {name: 'repeatNotifications'}],
             'data.address.user.id': address.user.id
-        }, function (err, jobs) {
-           if (err) {
-               session.endDialog("Failed to query your running jobs, please try next time.");
-           } else {
-               if (jobs.length > 0) {
-                   let text = 'Please send me back an id of a job you want to cancel\n\n';
-                   let jobsIds = [];
-                   jobs.forEach((job, idx) => {
-                       const content = job.attrs.data.content;
-                       const jobId = job.attrs.data.jobId;
+        }, function (err, /* Array */ jobs) {
+            if (err) {
+                session.endDialog("Failed to query your running jobs, please try next time.");
+            } else {
+                if (jobs.length > 0) {
+                    let text = 'Please send me back an id of a job you want to cancel\n\n';
+                    const jobsIds = [];
+                    const dateOptions = {
+                        hour: 'numeric',
+                        minute: 'numeric',
+                        day: 'numeric',
+                        month: 'numeric',
+                        year: 'numeric'
+                    };
 
-                       jobsIds.push(jobId);
+                    jobs.filter((job) => typeof job.attrs.data.jobId !== 'undefined')
+                        .forEach((job, idx) => {
+                            const content = job.attrs.data.content;
+                            const jobId = job.attrs.data.jobId;
 
-                       text += `${++idx}. id: ${jobId}, name: ${job.attrs.name}, 
-                       content: ${content.substring(0, 15 > content.length ? content.length : 15)}...\n`;
-                   });
-                   session.dialogData.jobsIds = jobsIds;
+                            jobsIds.push(jobId);
 
-                   botBuilder.Prompts.text(session, text);
-               } else {
-                   const message =  new botBuilder.Message()
-                       .address(address)
-                       .text("You have no running jobs");
-                   bot.send(message);
+                            text +=
+`${++idx}. id: ${jobId},\n
+name: ${job.attrs.name},\n
+lastRunAt: ${job.attrs.lastRunAt != null ? job.attrs.lastRunAt.toLocaleString('en-US', dateOptions) : 'no'},\n
+nextRunAt: ${job.attrs.nextRunAt != null ? job.attrs.nextRunAt.toLocaleString('en-US', dateOptions) : 'no'},\n
+content: ${content.substring(0, 15 > content.length ? content.length : 15)}...\n`;
 
-                   session.endDialog();
-               }
-           }
+                        });
+                    session.dialogData.jobsIds = jobsIds;
+
+                    botBuilder.Prompts.text(session, text);
+                } else {
+                    const message = new botBuilder.Message()
+                        .address(address)
+                        .text("You have no running jobs");
+                    bot.send(message);
+
+                    session.endDialog();
+                }
+            }
         });
     },
     (session, args, next) => {
