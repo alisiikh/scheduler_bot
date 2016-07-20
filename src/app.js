@@ -276,6 +276,8 @@ bot.dialog('/command/abort', [
                     address: session.message.address,
                     jobId: args.response
                 });
+
+                session.endDialog();
             } else {
                 session.endDialog("Incorrect job id, cancelling action.");
             }
