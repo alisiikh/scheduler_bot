@@ -18,7 +18,7 @@ agenda.define('sendNotifications', (job, done) => {
 
     console.log(`Job 'sendNotifications' is fired for ${address.user.name}!`);
 
-    var message = new botBuilder.Message()
+    const message = new botBuilder.Message()
         .address(address)
         .text(`Your one-time reminder:\n\n${content}`);
     bot.send(message);
@@ -27,13 +27,13 @@ agenda.define('sendNotifications', (job, done) => {
 });
 
 agenda.define('repeatNotifications', (job, done) => {
-    let jobData = job.attrs.data;
-    let content = jobData.content;
-    let address = jobData.address;
+    const jobData = job.attrs.data;
+    const content = jobData.content;
+    const address = jobData.address;
 
     console.log(`Job 'repeatNotifications' is fired for ${address.user.name}!`);
 
-    var message = new botBuilder.Message()
+    const message = new botBuilder.Message()
         .address(address)
         .text(`Your repeatable reminder:\n\n${content}`);
     bot.send(message);
@@ -41,9 +41,9 @@ agenda.define('repeatNotifications', (job, done) => {
     done();
 });
 
-agenda.define('abortNotifications', { priority: 'high' }, (job, done) => {
-    let jobData = job.attrs.data;
-    let address = jobData.address;
+agenda.define('abortNotifications', {priority: 'high'}, (job, done) => {
+    const jobData = job.attrs.data;
+    const address = jobData.address;
 
     agenda.cancel({
         $or: [{name: 'sendNotifications'}, {name: 'repeatNotifications'}],
@@ -64,7 +64,30 @@ agenda.define('abortNotifications', { priority: 'high' }, (job, done) => {
         bot.send(message);
     });
 
-   done();
+    done();
+});
+
+agenda.define('abortOneNotification', {priority: 'high'}, (job, done) => {
+    const jobData = job.attrs.data;
+    const address = jobData.address;
+    const jobId = jobData.jobId;
+
+    agenda.cancel({
+        $or: [{name: 'sendNotifications'}, {name: 'repeatNotifications'}],
+        'data.jobId': jobId
+    }, (err, numRemoved) => {
+        const message = new botBuilder.Message().address(address);
+
+        if (!err) {
+            message.text(`Removed job with id ${jobId}`);
+        } else {
+            message.text(`Failed to remove job with id ${jobId}`);
+        }
+
+        bot.send(message);
+    });
+
+    done();
 });
 
 agenda.on('ready', () => {

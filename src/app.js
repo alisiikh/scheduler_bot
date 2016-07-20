@@ -8,6 +8,7 @@ const humanInterval = require('human-interval');
 const cronParser = require('cron-parser');
 const Contact = require('./model').Contact;
 const intents = new botBuilder.IntentDialog();
+const uuid = require('node-uuid');
 
 bot.on('conversationUpdate', function (message) {
     // Check for group conversations
@@ -46,8 +47,8 @@ bot.on('conversationUpdate', function (message) {
 
 bot.on('contactRelationUpdate', function (message) {
     if (message.action === 'add') {
-        var name = message.user ? message.user.name : null;
-        var reply = new botBuilder.Message()
+        const name = message.user ? message.user.name : null;
+        const reply = new botBuilder.Message()
             .address(message.address)
             .text("Hello %s... Thanks for having me. \n\nType in 'start' command to start", name || 'there');
         bot.send(reply);
@@ -115,7 +116,8 @@ intents.matches(/^start$/i, [
         const prompt = `Choose a command from:\n
 'schedule' - schedule a delayed one-time notification\n
 'repeat' - schedule a repeatable notification\n
-'abort' - abort all running scheduled jobs`;
+'abort' - abort a single running job\n
+'abortall' - abort all of your currently running jobs`;
         session.beginDialog('/command', {
             prompt: prompt,
             retryPrompt: `Sorry, I don't understand you, please try again!\n\n${prompt}`,
@@ -141,7 +143,7 @@ intents.matches(/kapusta/gi, [
 ]);
 
 bot.dialog('/command', botBuilder.DialogAction.validatedPrompt(
-    botBuilder.PromptType.text, (response) => /^(schedule|repeat|abort)$/i.test(response)));
+    botBuilder.PromptType.text, (response) => /^(schedule|repeat|abort|abortall)$/i.test(response)));
 
 bot.dialog('/command/schedule', [
     (session) => {
@@ -171,6 +173,7 @@ bot.dialog('/command/schedule', [
             agenda.schedule(session.userData.interval, 'sendNotifications', {
                 address: session.message.address,
                 content: session.userData.content,
+                jobId: uuid.v4()
             });
 
             session.endDialog(`Notification has been scheduled, I will send you back in '${session.userData.interval}'`);
@@ -217,6 +220,7 @@ bot.dialog('/command/repeat', [
             agenda.every(session.userData.interval, 'repeatNotifications', {
                 address: session.message.address,
                 content: session.userData.content,
+                jobId: uuid.v4()
             });
 
             session.endDialog(`Notification has been scheduled for repeating, I will send you back every '${session.userData.interval}'`);
@@ -227,6 +231,59 @@ bot.dialog('/command/repeat', [
 ]);
 
 bot.dialog('/command/abort', [
+    (session, args, next) => {
+        const address = session.message.address;
+        agenda.jobs({
+            $or: [{name: 'sendNotifications'}, {name: 'repeatNotifications'}],
+            'data.address.user.id': address.user.id
+        }, function (err, jobs) {
+           if (err) {
+               session.endDialog("Failed to query your running jobs, please try next time.");
+           } else {
+               if (jobs.length > 0) {
+                   let text = 'Please send me back an id of a job you want to cancel\n\n';
+                   let jobsIds = [];
+                   jobs.forEach((job, idx) => {
+                       const content = job.attrs.data.content;
+                       const jobId = job.attrs.data.jobId;
+
+                       jobsIds.push(jobId);
+
+                       text += `${++idx}. id: ${jobId}, name: ${job.attrs.name}, 
+                       content: ${content.substring(0, 15 > content.length ? content.length : 15)}...\n`;
+                   });
+                   session.dialogData.jobsIds = jobsIds;
+
+                   botBuilder.Prompts.text(session, text);
+               } else {
+                   const message =  new botBuilder.Message()
+                       .address(address)
+                       .text("You have no running jobs");
+                   bot.send(message);
+
+                   session.endDialog();
+               }
+           }
+        });
+    },
+    (session, args, next) => {
+        if (!args.response) {
+            session.endDialog("You cancelled.");
+        } else {
+            const jobId = args.response;
+            if (session.dialogData.jobsIds.indexOf(jobId) !== -1) {
+                agenda.schedule('now', 'abortOneNotification', {
+                    address: session.message.address,
+                    jobId: args.response
+                });
+            } else {
+                session.endDialog("Incorrect job id, cancelling action.");
+            }
+        }
+    }
+]);
+
+bot.dialog('/command/abortall', [
     (session) => {
         agenda.schedule('now', 'abortNotifications', {
             address: session.message.address,
