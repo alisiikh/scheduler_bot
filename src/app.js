@@ -258,13 +258,12 @@ bot.dialog('/command/abort', [
 
                         jobsIds.push(jobId);
 
-                        text += `
-${++idx}. id: ${jobId},\n
+                        text +=
+`${++idx}. id: ${jobId},\n
 name: ${job.attrs.name},\n
 lastRunAt: ${job.attrs.lastRunAt != null ? job.attrs.lastRunAt.toLocaleString('en-US', dateOptions) : 'no'},\n
 nextRunAt: ${job.attrs.nextRunAt != null ? job.attrs.nextRunAt.toLocaleString('en-US', dateOptions) : 'no'},\n
-content: ${content.substring(0, 15 > content.length ? content.length : 15)}...\n
-`;
+content: ${content.substring(0, 15 > content.length ? content.length : 15)}...\n`;
 
                     });
                     session.dialogData.jobsIds = jobsIds;
