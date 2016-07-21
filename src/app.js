@@ -85,7 +85,7 @@ intents.onDefault([
     }
 ]);
 
-intents.matches(/^start$/i, [
+intents.matches(/^(\/)?start$/i, [
     (session, args, next) => {
         if (session.userData.contact) {
             const contact = session.userData.contact;
@@ -153,7 +153,7 @@ intents.matches(/kapusta/gi, [
 ]);
 
 bot.dialog('/command', botBuilder.DialogAction.validatedPrompt(
-    botBuilder.PromptType.text, (response) => /^(schedule|repeat|abort|abortall)$/i.test(response)));
+    botBuilder.PromptType.text, (response) => /^(\/)?(schedule|repeat|abort|abortall)$/i.test(response)));
 
 bot.dialog('/command/schedule', [
     (session) => {
