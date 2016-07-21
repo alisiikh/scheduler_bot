@@ -76,9 +76,10 @@ intents.onDefault([
     (session, args, next) => {
         if (session.message.address.conversation.isGroup) {
             console.log(`Received the message in group: '${session.message.text}', doing nothing`);
+            session.endDialog();
         } else {
             console.log(`Received the message: '${session.message.text}', sending a hint`);
-            session.send("To start, please type in 'start' command. \n\nUse 'cancel' to reset dialog.");
+            session.endDialog("To start, please type in 'start' command. \n\nUse 'cancel' to reset dialog.");
         }
     }
 ]);
@@ -138,7 +139,7 @@ intents.matches(/^(\/)?start$/i, [
 
 intents.matches(/kapusta/gi, [
     (session, args, next) => {
-        session.send(`Who said 'kapusta'? How dare you, mr. ${session.userData.contact.name}?!`);
+        session.endDialog(`Who said 'kapusta'? How dare you, mr. ${session.userData.contact.name}?!`);
     }
 ]);
 
