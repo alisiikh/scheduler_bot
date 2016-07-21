@@ -105,12 +105,15 @@ intents.matches(/^(\/)?start$/i, [
             .exec((err, contact) => {
                 if (!contact) {
                     const contact = BotUtil.createContactFromMessage(message);
-                    contact.save();
+                    contact.save()
+                        .then((contact) => {
+                            session.userData.contact = contact;
+                            next();
+                        });
+                } else {
+                    session.userData.contact = contact;
+                    next();
                 }
-            })
-            .then((contact) => {
-                session.userData.contact = contact;
-                next();
             });
     },
     (session, args) => {
