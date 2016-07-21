@@ -90,17 +90,13 @@ intents.matches(/^start$/i, [
         if (session.userData.contact) {
             const contact = session.userData.contact;
 
-            console.log(JSON.stringify(contact));
-            if (contact.name === "undefined") {
-                console.log("Yep");
+            if (!contact.name || contact.name === "undefined") {
                 contact.name = BotUtil.getContactNameFromMessage(session.message);
                 console.log(JSON.stringify(contact));
                 contact.save()
                     .then((contact) => {
                         session.userData.contact = contact;
                     });
-
-                console.log("Really?!");
             }
             next();
             return;
@@ -115,7 +111,7 @@ intents.matches(/^start$/i, [
                     const contact = BotUtil.createContactFromMessage(message);
                     contact.save();
                 } else {
-                    if (!contact.name) {
+                    if (!contact.name || contact.name === "undefined") {
                         contact.name = BotUtil.getContactNameFromMessage(message);
                         contact.save();
                     }
@@ -152,7 +148,7 @@ intents.matches(/^start$/i, [
 
 intents.matches(/kapusta/gi, [
     (session, args, next) => {
-        session.send(`Who said 'kapusta'? How dare you, mr. ${session.message.user.name}?!`);
+        session.send(`Who said 'kapusta'? How dare you, mr. ${session.userData.contact.name}?!`);
     }
 ]);
 
