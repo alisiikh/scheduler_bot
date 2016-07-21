@@ -1,6 +1,5 @@
 'use strict';
 
-const async = require('async');
 const bot = require('./bot').bot;
 const botBuilder = require('./bot').botBuilder;
 const agenda = require('./agenda');
@@ -311,48 +310,3 @@ bot.dialog('/command/abortall', [
         session.endDialog();
     }
 ]);
-
-
-var json = {
-    "type": "message",
-    "timestamp": "2016-07-21T19:29:09.0367374+00:00",
-    "text": "nykak cho",
-    "attachments": [],
-    "entities": [],
-    "address": {
-        "id": "DFFlUCWEZAQ", "channelId": "telegram", "user": {
-            "id": "3942079"
-        }
-        ,
-        "conversation": {
-            "isGroup": true, "id": "-20027856", "name": "������������ is not a teenager anymore"
-        }
-        ,
-        "bot": {
-            "id": "smart_scheduler_bot", "name": "schedulerbot"
-        }
-        ,
-        "serviceUrl": "https://telegram.botframework.com", "useAuth": true
-    },
-    "source": "telegram",
-    "sourceEvent": {
-        "update_id": 467125622,
-        "message": {
-            "message_id": 472,
-            "from": {
-                "id": 3942079, "first_name": "Aleksey", "last_name": "Lisiikh"
-            }
-            ,
-            "date": 1469129349, "chat": {
-                "id": -20027856, "type": "group", "title": "������������ is not a teenager anymore"
-            }
-            ,
-            "forward_date": -62135596800, "text": "nykak cho"
-        }
-    }
-    ,
-    "agent": "botbuilder",
-    "user": {
-        "id": "3942079"
-    }
-};

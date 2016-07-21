@@ -16,7 +16,6 @@
   "license": "MIT",
   "dependencies": {
     "agenda": "^0.8.1",
-    "async": "^2.0.0",
     "botbuilder": "^3.0.1",
     "cron-parser": "^2.1.0",
     "human-interval": "^0.1.6",
