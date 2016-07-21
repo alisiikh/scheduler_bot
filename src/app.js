@@ -88,6 +88,14 @@ intents.onDefault([
 intents.matches(/^start$/i, [
     (session, args, next) => {
         if (session.userData.contact) {
+            const contact = session.userData.contact;
+            if (!contact.name) {
+                contact.name = BotUtil.getContactNameFromMessage(session.message);
+                contact.save()
+                    .then((contact) => {
+                        session.userData.contact = contact;
+                    });
+            }
             next();
             return;
         }
