@@ -91,6 +91,7 @@ intents.matches(/^start$/i, [
             const contact = session.userData.contact;
             if (!contact.name) {
                 contact.name = BotUtil.getContactNameFromMessage(session.message);
+                console.log(JSON.stringify(contact));
                 contact.save()
                     .then((contact) => {
                         session.userData.contact = contact;
