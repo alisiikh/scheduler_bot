@@ -29,6 +29,10 @@ class BotUtil {
             return '';
         }
     }
+
+    static parseCommandName(commandName) {
+        return commandName.replace('/', '').toLowerCase();
+    }
 }
 
 module.exports = BotUtil;

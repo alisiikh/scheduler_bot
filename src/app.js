@@ -138,7 +138,7 @@ intents.matches(/^(\/)?start$/i, [
         if (!args.response) {
             session.endDialog("You cancelled.");
         } else {
-            const command = args.response.toLowerCase();
+            const command = BotUtil.parseCommandName(args.response);
             session.userData.command = command;
 
             session.beginDialog(`/command/${command}`);
