@@ -9,6 +9,7 @@ const cronParser = require('cron-parser');
 const Contact = require('./model').Contact;
 const intents = new botBuilder.IntentDialog();
 const uuid = require('node-uuid');
+const BotUtil = require('./botutil');
 
 bot.on('conversationUpdate', function (message) {
     // Check for group conversations
@@ -86,33 +87,30 @@ intents.onDefault([
 
 intents.matches(/^start$/i, [
     (session, args, next) => {
-        const message = session.message;
-        const user = message.user;
-
-        const onContactSync = (contact) => {
-            session.userData.contact = contact;
+        if (session.userData.contact) {
             next();
-        };
-
-        if (!session.userData.contact) {
-            Contact.findOne({userId: user.id}, (err, contact) => {
-                if (!contact) {
-                    const contact = new Contact({
-                        userId: user.id,
-                        name: user.name,
-                        channel: message.address.channelId,
-                        dateCreated: new Date(),
-                    });
-                    contact.save().then((contact) => {
-                        onContactSync(contact);
-                    });
-                } else {
-                    onContactSync(contact);
-                }
-            });
-        } else {
-            next();
+            return;
         }
+
+        const message = session.message;
+        const userId = message.user.id;
+
+        Contact.findOne({userId: userId})
+            .exec((err, contact) => {
+                if (!contact) {
+                    const contact = BotUtil.createContactFromMessage(message);
+                    contact.save();
+                } else {
+                    if (!contact.name) {
+                        contact.name = BotUtil.getContactNameFromMessage(message);
+                        contact.save();
+                    }
+                }
+            })
+            .then((contact) => {
+                session.userData.contact = contact;
+                next();
+            });
     },
     (session, args) => {
         const prompt = `Choose a command from:\n
@@ -261,7 +259,7 @@ bot.dialog('/command/abort', [
                         jobsIds.push(jobId);
 
                         text +=
-`${++idx}. id: ${jobId},\n
+                            `${++idx}. id: ${jobId},\n
 name: ${job.attrs.name},\n
 lastRunAt: ${job.attrs.lastRunAt != null ? job.attrs.lastRunAt.toLocaleString('en-US', dateOptions) : 'no'},\n
 nextRunAt: ${job.attrs.nextRunAt != null ? job.attrs.nextRunAt.toLocaleString('en-US', dateOptions) : 'no'},\n
@@ -309,3 +307,48 @@ bot.dialog('/command/abortall', [
         session.endDialog();
     }
 ]);
+
+
+var json = {
+    "type": "message",
+    "timestamp": "2016-07-21T19:29:09.0367374+00:00",
+    "text": "nykak cho",
+    "attachments": [],
+    "entities": [],
+    "address": {
+        "id": "DFFlUCWEZAQ", "channelId": "telegram", "user": {
+            "id": "3942079"
+        }
+        ,
+        "conversation": {
+            "isGroup": true, "id": "-20027856", "name": "������������ is not a teenager anymore"
+        }
+        ,
+        "bot": {
+            "id": "smart_scheduler_bot", "name": "schedulerbot"
+        }
+        ,
+        "serviceUrl": "https://telegram.botframework.com", "useAuth": true
+    },
+    "source": "telegram",
+    "sourceEvent": {
+        "update_id": 467125622,
+        "message": {
+            "message_id": 472,
+            "from": {
+                "id": 3942079, "first_name": "Aleksey", "last_name": "Lisiikh"
+            }
+            ,
+            "date": 1469129349, "chat": {
+                "id": -20027856, "type": "group", "title": "������������ is not a teenager anymore"
+            }
+            ,
+            "forward_date": -62135596800, "text": "nykak cho"
+        }
+    }
+    ,
+    "agent": "botbuilder",
+    "user": {
+        "id": "3942079"
+    }
+};
