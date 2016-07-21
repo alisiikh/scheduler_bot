@@ -75,6 +75,8 @@ intents.onDefault([
     (session, args, next) => {
         if (session.message.address.conversation.isGroup) {
             console.log(`Received the message in group: '${session.message.text}', doing nothing`);
+            console.log(`Address from group: ${session.message.address}`);
+            console.log(`Message: ${JSON.stringify(session.message)}`);
         } else {
             console.log(`Received the message: '${session.message.text}', sending a hint`);
             session.send("To start, please type in 'start' command. \n\nUse 'cancel' to reset dialog.");
