@@ -89,13 +89,18 @@ intents.matches(/^start$/i, [
     (session, args, next) => {
         if (session.userData.contact) {
             const contact = session.userData.contact;
-            if (!contact.name) {
+
+            console.log(JSON.stringify(contact));
+            if (contact.name === "undefined") {
+                console.log("Yep");
                 contact.name = BotUtil.getContactNameFromMessage(session.message);
                 console.log(JSON.stringify(contact));
                 contact.save()
                     .then((contact) => {
                         session.userData.contact = contact;
                     });
+
+                console.log("Really?!");
             }
             next();
             return;
