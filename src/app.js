@@ -76,8 +76,6 @@ intents.onDefault([
     (session, args, next) => {
         if (session.message.address.conversation.isGroup) {
             console.log(`Received the message in group: '${session.message.text}', doing nothing`);
-            console.log(`Address from group: ${session.message.address}`);
-            console.log(`Message: ${JSON.stringify(session.message)}`);
         } else {
             console.log(`Received the message: '${session.message.text}', sending a hint`);
             session.send("To start, please type in 'start' command. \n\nUse 'cancel' to reset dialog.");
@@ -91,11 +89,13 @@ intents.matches(/^(\/)?start$/i, [
             const contact = session.userData.contact;
 
             if (!contact.name || contact.name === "undefined") {
-                contact.name = BotUtil.getContactNameFromMessage(session.message);
-                console.log(JSON.stringify(contact));
-                contact.save()
-                    .then((contact) => {
-                        session.userData.contact = contact;
+                Contact.findOne({userId: contact.userId})
+                    .exec((err, contact) => {
+                        contact.name = BotUtil.getContactNameFromMessage(session.message);
+                        contact.save()
+                            .then((contact) => {
+                                session.userData.contact = contact;
+                            });
                     });
             }
             next();
