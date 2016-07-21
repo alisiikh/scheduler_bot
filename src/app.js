@@ -83,21 +83,16 @@ intents.onDefault([
     }
 ]);
 
+intents.matches(/^(\/)?clear$/i, [
+    (session, args, next) => {
+        session.userData = {};
+        session.endDialog("Cleared user data cache");
+    }
+]);
+
 intents.matches(/^(\/)?start$/i, [
     (session, args, next) => {
         if (session.userData.contact) {
-            const contact = session.userData.contact;
-
-            if (!contact.name || contact.name === "undefined") {
-                Contact.findOne({userId: contact.userId})
-                    .exec((err, contact) => {
-                        contact.name = BotUtil.getContactNameFromMessage(session.message);
-                        contact.save()
-                            .then((contact) => {
-                                session.userData.contact = contact;
-                            });
-                    });
-            }
             next();
             return;
         }
@@ -110,11 +105,6 @@ intents.matches(/^(\/)?start$/i, [
                 if (!contact) {
                     const contact = BotUtil.createContactFromMessage(message);
                     contact.save();
-                } else {
-                    if (!contact.name || contact.name === "undefined") {
-                        contact.name = BotUtil.getContactNameFromMessage(message);
-                        contact.save();
-                    }
                 }
             })
             .then((contact) => {
