@@ -17,8 +17,7 @@ class BotUtil {
     }
 
     static getContactNameFromMessage(message) {
-        if (message.user.name) {
-            // possibly skype
+        if (message.user.hasOwnProperty('name')) {
             return message.user.name;
         } else if (message.address.channelId === 'telegram') {
             const firstName = message.sourceEvent.message.from.first_name;
