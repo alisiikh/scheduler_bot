@@ -17,6 +17,8 @@ class BotUtil {
     }
 
     static getContactNameFromMessage(message) {
+        console.log("getContactNameFromMessage: " + JSON.stringify(message));
+
         if (message.user.hasOwnProperty('name')) {
             return message.user.name;
         } else if (message.address.channelId === 'telegram') {
