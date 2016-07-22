@@ -69,12 +69,18 @@ bot.on('groupMessage', function (message) {
     console.log("Group message: " + message);
 });
 
+bot.use(botBuilder.Middleware.dialogVersion({
+    version: 1.0,
+    resetCommand: /reset$/i,
+    message: 'Conversation data has been cleared'
+}));
+
 bot.dialog('/', intents);
 
 intents.onDefault([
     (session, args, next) => {
         if (session.message.address.conversation.isGroup) {
-            console.log(`Received the message in group: '${session.message.text}', doing nothing`);
+            console.log(`Received the message in group: '${JSON.stringify(session.message, null, 3)}', doing nothing`);
             session.endDialog();
         } else {
             console.log(`Received the message: '${session.message.text}', sending a hint`);
@@ -83,14 +89,7 @@ intents.onDefault([
     }
 ]);
 
-intents.matches(/^(\/)?clear$/i, [
-    (session, args, next) => {
-        session.userData = {};
-        session.endDialog("Cleared user data cache");
-    }
-]);
-
-intents.matches(/^(\/)?start$/i, [
+intents.matches(/(\/)?start$/i, [
     (session, args, next) => {
         if (session.userData.contact) {
             next();
@@ -146,7 +145,7 @@ intents.matches(/kapusta/gi, [
 ]);
 
 bot.dialog('/command', botBuilder.DialogAction.validatedPrompt(
-    botBuilder.PromptType.text, (response) => /^(\/)?(schedule|repeat|abort|abortall)$/i.test(response)));
+    botBuilder.PromptType.text, (response) => BotUtil.isBotCommand(response)));
 
 bot.dialog('/command/schedule', [
     (session) => {

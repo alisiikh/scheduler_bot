@@ -1,5 +1,7 @@
 const Contact = require('./model').Contact;
 
+const COMMAND_NAME_REGEX = /[\/]?(schedule|repeat|abort|abortall)$/i;
+
 class BotUtil {
 
     static createContactFromMessage(message) {
@@ -17,8 +19,6 @@ class BotUtil {
     }
 
     static getContactNameFromMessage(message) {
-        console.log("getContactNameFromMessage: " + JSON.stringify(message));
-
         if (message.user.hasOwnProperty('name')) {
             return message.user.name;
         } else if (message.address.channelId === 'telegram') {
@@ -31,8 +31,19 @@ class BotUtil {
         }
     }
 
-    static parseCommandName(commandName) {
-        return commandName.replace('/', '').toLowerCase();
+    static parseCommandName(response) {
+        if (BotUtil.isBotCommand(response)) {
+            const match = COMMAND_NAME_REGEX.exec(response);
+            if (match.length > 0) {
+                return match[1];
+            }
+        } else {
+            return null;
+        }
+    }
+
+    static isBotCommand(response) {
+        return COMMAND_NAME_REGEX.test(response);
     }
 }
 
