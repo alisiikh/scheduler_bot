@@ -83,7 +83,7 @@ intents.onDefault([
             console.log(`Received the message in group: '${JSON.stringify(session.message, null, 3)}', doing nothing`);
             session.endDialog();
         } else {
-            console.log(`Received the message: '${session.message.text}', sending a hint`);
+            console.log(`Received the message: '${JSON.stringify(session.message, null, 3)}', sending a hint`);
             session.endDialog("To start, please type in 'start' command. \n\nUse 'cancel' to reset dialog.");
         }
     }
