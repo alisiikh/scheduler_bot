@@ -1,5 +1,8 @@
 'use strict';
 
+// TODO: Enable scheduling by exact date+time
+// TODO: Fix working of bot in group
+
 const bot = require('./bot').bot;
 const botBuilder = require('./bot').botBuilder;
 const agenda = require('./agenda');
