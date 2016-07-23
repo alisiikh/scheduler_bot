@@ -6,8 +6,8 @@ const botConnector = require('./bot').botConnector;
 const serverCfg = require('./config').server;
 const swig = require('swig');
 
-const privacyHtmlTmpl = swig.compileFile('template/privacy.html');
-const termsHtmlTmpl = swig.compileFile('template/terms.html');
+const privacyHtmlTmpl = swig.compileFile('template/html/privacy.html');
+const termsHtmlTmpl = swig.compileFile('template/html/terms.html');
 
 const server = restify.createServer({
     name: 'botServer'
