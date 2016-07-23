@@ -5,7 +5,7 @@ const bot = require('./bot').bot;
 const botBuilder = require('./bot').botBuilder;
 const agenda = require('agenda')({
     db: {
-        address: require('./config').databaseURL
+        address: require('./config').mongo.connection
     },
     processEvery: '30 seconds',
     maxConcurrency: 20

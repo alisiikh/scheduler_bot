@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const appCfg = require('./config');
 
-mongoose.connect(appCfg.databaseURL);
+mongoose.connect(appCfg.mongo.connection);
 
 module.exports.Contact = mongoose.model('Contact',
 	new Schema({

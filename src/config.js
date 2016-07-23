@@ -2,6 +2,13 @@
 
 const databaseName = "scheduler_bot";
 
+let databaseURL;
+if (process.env.MONGODB_URL) {
+	databaseURL = `${process.env.MONGODB_URL}${databaseName}`;
+} else {
+	databaseURL = `mongodb://127.0.0.1:27017/${databaseName}`;
+}
+
 module.exports = {
 	server: {
 		ipAddress: process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1',
@@ -13,7 +20,8 @@ module.exports = {
 		botAppSecret: '3O09EvDOJK4DMt6qeuwvMZq',
 		choiceEnabled: false
 	},
-	databaseURL: (process.env.MONGODB_URL ? `${process.env.MONGODB_URL}${databaseName}` : null)
-	    || `mongodb://127.0.0.1:27017/${databaseName}`
+	mongo: {
+		connection: databaseURL
+	}
 };
 
