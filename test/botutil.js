@@ -1,6 +1,7 @@
 const BotUtil = require('../src/botutil');
-const expect = require('chai').expect;
-const assert = require('chai').assert;
+const chai = require('chai');
+const expect = chai.expect;
+const assert = chai.assert;
 
 describe("", () => {
     describe("test for getContactNameFromMessage() util method", () => {
