@@ -4,7 +4,7 @@
   "description": "Scheduler BOT built on top of Bot Framework",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "./node_modules/.bin/mocha --reporter spec",
     "start": "node --debug index.js"
   },
   "keywords": [
@@ -17,9 +17,11 @@
   "dependencies": {
     "agenda": "^0.8.1",
     "botbuilder": "^3.0.1",
+    "chai": "^3.5.0",
     "cron-parser": "^2.1.0",
     "human-interval": "^0.1.6",
     "i18n": "^0.8.3",
+    "mocha": "^2.5.3",
     "mongodb": "^2.2.1",
     "mongoose": "^4.5.3",
     "node-uuid": "^1.4.7",

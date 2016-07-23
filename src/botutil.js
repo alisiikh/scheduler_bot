@@ -22,10 +22,10 @@ class BotUtil {
         if (message.user.hasOwnProperty('name')) {
             return message.user.name;
         } else if (message.address.channelId === 'telegram') {
-            const firstName = message.sourceEvent.message.from.first_name;
-            const lastName = message.sourceEvent.message.from.last_name;
+            const firstName = message.sourceEvent.message.from.first_name || '';
+            const lastName = message.sourceEvent.message.from.last_name || '';
 
-            return `${firstName}${lastName ? ' ' + lastName : ''}`;
+            return `${firstName}${lastName ? ' ' + lastName : ''}`.trim();
         } else {
             return '';
         }
