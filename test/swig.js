@@ -21,5 +21,15 @@ describe('Swig tests', () => {
 
             done();
         });
+
+        it('Variable content of non-string type is not supported', (done) => {
+            const excerptTestTmpl = swig.compile('{{ content | excerpt(10) }}');
+
+            expect(() => excerptTestTmpl({ content: 5 })).to.throw("Filter 'excerpt' only supports String variable as an input");
+            expect(() => excerptTestTmpl({ content: NaN })).to.throw("Filter 'excerpt' only supports String variable as an input");
+            expect(() => excerptTestTmpl({ content: [] })).to.throw("Filter 'excerpt' only supports String variable as an input");
+            expect(() => excerptTestTmpl({ content: {} })).to.throw("Filter 'excerpt' only supports String variable as an input");
+            done();
+        });
     });
 });
