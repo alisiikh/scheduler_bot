@@ -78,13 +78,15 @@ bot.use(botBuilder.Middleware.dialogVersion({
     message: 'Conversation data has been cleared'
 }));
 
-// TODO: replace with botBuilder.Middleware.sendTyping(); when 3.1.1 botbuilder is release
-bot.use({
-    botbuilder: function(session, next) {
-        session.sendTyping();
-        next();
-    }
-});
+// TODO: replace with botBuilder.Middleware.sendTyping(); when 3.1.1 botbuilder is released
+// bot.use(botBuilder.Middleware.sendTyping());
+
+// bot.use({
+//     botbuilder: function(session, next) {
+//         session.sendTyping();
+//         next();
+//     }
+// });
 
 // bot.endConversationAction('goodbye', 'Goodbye :)', { matches: /^goodbye/i });
 // bot.beginDialogAction('help', '/help', { matches: /^help/i });
