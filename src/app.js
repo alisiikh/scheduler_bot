@@ -12,6 +12,10 @@ const Contact = require('./model').Contact;
 const intents = new botBuilder.IntentDialog();
 const uuid = require('node-uuid');
 const BotUtil = require('./botutil');
+const swig = require('./swig');
+
+const jobAbortInfoTmpl = swig.compileFile('template/md/job_abort_info.md');
+const startPromptTmpl = swig.compileFile('template/md/start_prompt.md');
 
 bot.on('conversationUpdate', function (message) {
     // Check for group conversations
@@ -74,7 +78,7 @@ bot.on('groupMessage', function (message) {
 
 bot.use(botBuilder.Middleware.dialogVersion({
     version: 1.0,
-    resetCommand: /reset$/i,
+    resetCommand: /(\/)?reset$/i,
     message: 'Conversation data has been cleared'
 }));
 
@@ -118,11 +122,7 @@ intents.matches(/(\/)?start$/i, [
             });
     },
     (session, args) => {
-        const prompt = `Choose a command from:\n
-'schedule' - schedule a delayed one-time notification\n
-'repeat' - schedule a repeatable notification\n
-'abort' - abort a single running job\n
-'abortall' - abort all of your currently running jobs`;
+        const prompt = startPromptTmpl();
         session.beginDialog('/command', {
             prompt: prompt,
             retryPrompt: `Sorry, I don't understand you, please try again!\n\n${prompt}`,
@@ -247,15 +247,8 @@ bot.dialog('/command/abort', [
                 session.endDialog("Failed to query your running jobs, please try next time.");
             } else {
                 if (jobs.length > 0) {
-                    let text = 'Please send me back an id of a job you want to cancel\n\n';
+                    let text = 'Please send me back an id of a job you want to cancel:\n\n';
                     const jobsIds = [];
-                    const dateOptions = {
-                        hour: 'numeric',
-                        minute: 'numeric',
-                        day: 'numeric',
-                        month: 'numeric',
-                        year: 'numeric'
-                    };
 
                     jobs.forEach((job, idx) => {
                         const content = job.attrs.data.content;
@@ -263,12 +256,14 @@ bot.dialog('/command/abort', [
 
                         jobsIds.push(jobId);
 
-                        text +=
-                            `${++idx}. id: ${jobId},\n
-name: ${job.attrs.name},\n
-lastRunAt: ${job.attrs.lastRunAt != null ? job.attrs.lastRunAt.toLocaleString('en-US', dateOptions) : 'no'},\n
-nextRunAt: ${job.attrs.nextRunAt != null ? job.attrs.nextRunAt.toLocaleString('en-US', dateOptions) : 'no'},\n
-content: ${content.substring(0, 15 > content.length ? content.length : 15)}...\n`;
+                        text += jobAbortInfoTmpl({
+                            idx: ++idx,
+                            jobId: jobId,
+                            jobName: job.attrs.name,
+                            lastRunAt: job.attrs.lastRunAt,
+                            nextRunAt: job.attrs.nextRunAt,
+                            content: content
+                        });
 
                     });
                     session.dialogData.jobsIds = jobsIds;

@@ -4,7 +4,7 @@ const restify = require('restify');
 const bot = require('./bot').bot;
 const botConnector = require('./bot').botConnector;
 const serverCfg = require('./config').server;
-const swig = require('swig');
+const swig = require('./swig');
 
 const privacyHtmlTmpl = swig.compileFile('template/html/privacy.html');
 const termsHtmlTmpl = swig.compileFile('template/html/terms.html');
