@@ -72,15 +72,23 @@ bot.on('deleteUserData', function (message) {
     // User asked to delete their data
 });
 
-bot.on('groupMessage', function (message) {
-    console.log("Group message: " + message);
-});
-
 bot.use(botBuilder.Middleware.dialogVersion({
     version: 1.0,
     resetCommand: /(\/)?reset$/i,
     message: 'Conversation data has been cleared'
 }));
+
+// TODO: replace with botBuilder.Middleware.sendTyping(); when 3.1.1 botbuilder is release
+bot.use({
+    botbuilder: function(session, next) {
+        session.sendTyping();
+        next();
+    }
+});
+
+// bot.endConversationAction('goodbye', 'Goodbye :)', { matches: /^goodbye/i });
+// bot.beginDialogAction('help', '/help', { matches: /^help/i });
+
 
 bot.dialog('/', intents);
 
