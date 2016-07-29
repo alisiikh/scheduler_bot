@@ -9,7 +9,9 @@ const agenda = require('./agenda');
 const humanInterval = require('human-interval');
 const cronParser = require('cron-parser');
 const Contact = require('./model').Contact;
-const intents = new botBuilder.IntentDialog();
+const intents = new botBuilder.IntentDialog({
+    intentThreshold: 0.01
+});
 const uuid = require('node-uuid');
 const BotUtil = require('./botutil');
 const swig = require('./swig');
