@@ -94,7 +94,7 @@ intents.onDefault([
             session.endDialog();
         } else {
             console.log(`Received the message: '${JSON.stringify(session.message, null, 3)}', sending a hint`);
-            session.endDialog("To start, please type in 'start' command. \n\nUse 'cancel' to reset dialog.");
+            session.endDialog("To start, please type in 'start' command. \n\nType 'cancel' anytime to discard conversation to start from scratch.");
         }
     }
 ]);
