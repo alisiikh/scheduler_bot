@@ -3,6 +3,7 @@
 // TODO: Enable scheduling by exact date+time
 
 const bot = require('./bot').bot;
+const BotMiddleware = require('./bot').BotMiddleware;
 const botBuilder = require('./bot').botBuilder;
 const agenda = require('./agenda');
 const humanInterval = require('human-interval');
@@ -77,11 +78,13 @@ bot.use(botBuilder.Middleware.dialogVersion({
     message: 'Conversation data has been cleared'
 }));
 
-bot.use(botBuilder.Middleware.sendTyping());
-
 // bot.endConversationAction('goodbye', 'Goodbye :)', { matches: /^goodbye/i });
 // bot.beginDialogAction('help', '/help', { matches: /^help/i });
 
+bot.use(botBuilder.Middleware.sendTyping());
+
+// convert group message to GOOD format (until fixed by Skype guys)
+bot.use(BotMiddleware.fixSkypeGroupMessaging());
 
 bot.dialog('/', intents);
 
