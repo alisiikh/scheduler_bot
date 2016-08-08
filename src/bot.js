@@ -18,19 +18,14 @@ class BotMiddleware {
                 let address = message.address;
 
                 if (address.channelId === "skype" && address.conversation.isGroup) {
-                    console.log("In skype group");
-                    console.log("Original group message: " + message.text);
                     if (message.entities.length > 0) {
-                        console.log("Entities > 0");
-                        let content;
+                        let content = message.text;
 
                         message.entities.forEach((entity) => {
                             content = message.text.replace(entity.text, "");
                         });
 
-                        content = message.text.trim();
-
-                        session.message.text = content;
+                        session.message.text = content.trim();
 
                         console.log("Converted group message: " + content);
                     }
