@@ -17,8 +17,7 @@ module.exports = {
 	},
 	bot: {
 		botAppId: '74e0ce5a-1742-4540-9abe-ce07ca95a07c',
-		botAppSecret: '3O09EvDOJK4DMt6qeuwvMZq',
-		choiceEnabled: false
+		botAppSecret: '3O09EvDOJK4DMt6qeuwvMZq'
 	},
 	mongo: {
 		connection: databaseURL

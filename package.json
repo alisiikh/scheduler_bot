@@ -16,13 +16,13 @@
   "license": "MIT",
   "dependencies": {
     "agenda": "^0.8.1",
-    "botbuilder": "^3.1.1",
+    "botbuilder": "^3.2.3",
     "chai": "^3.5.0",
     "cron-parser": "^2.1.0",
     "human-interval": "^0.1.6",
     "mocha": "^2.5.3",
-    "mongodb": "^2.2.1",
-    "mongoose": "^4.5.3",
+    "mongodb": "^2.2.5",
+    "mongoose": "^4.5.8",
     "node-uuid": "^1.4.7",
     "restify": "^4.1.1",
     "swig": "^1.4.2"

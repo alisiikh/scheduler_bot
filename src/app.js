@@ -1,7 +1,6 @@
 'use strict';
 
 // TODO: Enable scheduling by exact date+time
-// TODO: Fix working of bot in group
 
 const bot = require('./bot').bot;
 const botBuilder = require('./bot').botBuilder;
@@ -9,9 +8,7 @@ const agenda = require('./agenda');
 const humanInterval = require('human-interval');
 const cronParser = require('cron-parser');
 const Contact = require('./model').Contact;
-const intents = new botBuilder.IntentDialog({
-    intentThreshold: 0.01
-});
+const intents = new botBuilder.IntentDialog({ intentThreshold: 0.01 });
 const uuid = require('node-uuid');
 const BotUtil = require('./botutil');
 const swig = require('./swig');
@@ -80,15 +77,7 @@ bot.use(botBuilder.Middleware.dialogVersion({
     message: 'Conversation data has been cleared'
 }));
 
-// TODO: replace with botBuilder.Middleware.sendTyping(); when 3.1.1 botbuilder is released
-// bot.use(botBuilder.Middleware.sendTyping());
-
-// bot.use({
-//     botbuilder: function(session, next) {
-//         session.sendTyping();
-//         next();
-//     }
-// });
+bot.use(botBuilder.Middleware.sendTyping());
 
 // bot.endConversationAction('goodbye', 'Goodbye :)', { matches: /^goodbye/i });
 // bot.beginDialogAction('help', '/help', { matches: /^help/i });
