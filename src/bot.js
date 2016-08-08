@@ -26,8 +26,6 @@ class BotMiddleware {
                         });
 
                         session.message.text = content.trim();
-
-                        console.log("Converted group message: " + content);
                     }
                 }
 
