@@ -84,7 +84,7 @@ bot.use(botBuilder.Middleware.dialogVersion({
 bot.use(botBuilder.Middleware.sendTyping());
 
 // convert group message to GOOD format (until fixed by Skype guys)
-bot.use(BotMiddleware.fixSkypeGroupMessaging());
+bot.use(botBuilder.Middleware.convertSkypeGroupMessages());
 
 bot.dialog('/', intents);
 
