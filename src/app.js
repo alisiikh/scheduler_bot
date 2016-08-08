@@ -89,11 +89,14 @@ bot.dialog('/', intents);
 
 intents.onDefault([
     (session, args, next) => {
-        if (session.message.address.conversation.isGroup) {
-            console.log(`Received the message in group: '${JSON.stringify(session.message, null, 3)}', doing nothing`);
+        let message = session.message;
+        let address = message.address;
+
+        if (address.channelId !== "skype" && address.conversation.isGroup) {
+            console.log(`Received the message in group: '${JSON.stringify(message, null, 3)}', doing nothing`);
             session.endDialog();
         } else {
-            console.log(`Received the message: '${JSON.stringify(session.message, null, 3)}', sending a hint`);
+            console.log(`Received the message: '${JSON.stringify(message, null, 3)}', sending a hint`);
             session.endDialog("To start, please type in 'start' command. \n\nType 'cancel' anytime to discard conversation to start from scratch.");
         }
     }
