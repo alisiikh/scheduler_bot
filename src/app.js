@@ -82,7 +82,7 @@ bot.use(botBuilder.Middleware.convertSkypeGroupMessages());
 // bot.use(botBuilder.Middleware.ignoreNotDirectGroupMessages());
 bot.use(botBuilder.Middleware.sendTyping());
 
-bot.endConversationAction('cancel', 'You cancelled.', { matches: /^cancel$/i });
+bot.endConversationAction('cancel', 'You cancelled.', { matches: /(\/)?cancel$/i });
 // bot.beginDialogAction('help', '/help', { matches: /^help/i });
 
 bot.dialog('/', intents);
