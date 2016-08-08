@@ -33,6 +33,21 @@ botBuilder.Middleware.convertSkypeGroupMessages = function() {
     }
 };
 
+botBuilder.Middleware.ignoreNotDirectGroupMessages = function () {
+    return {
+        botbuilder: function (session, next) {
+            let message = session.message;
+            let address = message.address;
+
+            if (address.conversation.isGroup) {
+                session.endDialog();
+            } else {
+                next();
+            }
+        }
+    };
+};
+
 module.exports = {
     bot,
     botBuilder,

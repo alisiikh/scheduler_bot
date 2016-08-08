@@ -77,10 +77,10 @@ bot.use(botBuilder.Middleware.dialogVersion({
     message: 'Conversation data has been cleared'
 }));
 
-bot.use(botBuilder.Middleware.sendTyping());
-
 // convert group message to GOOD format (until fixed by Skype guys)
 bot.use(botBuilder.Middleware.convertSkypeGroupMessages());
+bot.use(botBuilder.Middleware.ignoreNotDirectGroupMessages());
+bot.use(botBuilder.Middleware.sendTyping());
 
 bot.endConversationAction('cancel', 'You cancelled.', { matches: /^cancel$/i });
 // bot.beginDialogAction('help', '/help', { matches: /^help/i });
