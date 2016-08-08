@@ -79,7 +79,7 @@ bot.use(botBuilder.Middleware.dialogVersion({
 
 // convert group message to GOOD format (until fixed by Skype guys)
 bot.use(botBuilder.Middleware.convertSkypeGroupMessages());
-bot.use(botBuilder.Middleware.ignoreNotDirectGroupMessages());
+// bot.use(botBuilder.Middleware.ignoreNotDirectGroupMessages());
 bot.use(botBuilder.Middleware.sendTyping());
 
 bot.endConversationAction('cancel', 'You cancelled.', { matches: /^cancel$/i });
