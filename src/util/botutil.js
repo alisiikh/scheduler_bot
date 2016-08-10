@@ -1,4 +1,4 @@
-const Contact = require('./model').Contact;
+const Contact = require('./../model').Contact;
 
 const COMMAND_NAME_REGEX = /[\/]?(schedule|repeat|abort|abortall)$/i;
 

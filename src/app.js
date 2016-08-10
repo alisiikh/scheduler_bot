@@ -2,6 +2,9 @@
 
 // TODO: Enable scheduling by exact date+time
 
+// load system first
+require('./system');
+
 const bot = require('./bot').bot;
 const botBuilder = require('./bot').botBuilder;
 const agenda = require('./agenda');
@@ -10,7 +13,7 @@ const cronParser = require('cron-parser');
 const Contact = require('./model').Contact;
 const intents = new botBuilder.IntentDialog({ intentThreshold: 0.01 });
 const uuid = require('node-uuid');
-const BotUtil = require('./botutil');
+const BotUtil = require('./util/botutil');
 const swig = require('./swig');
 
 const jobAbortInfoTmpl = swig.compileFile('template/md/job_abort_info.md');

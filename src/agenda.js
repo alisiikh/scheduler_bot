@@ -1,6 +1,6 @@
 'use strict';
 
-const MDUtil = require('./mdutil');
+const MDUtil = require('./util/mdutil');
 const bot = require('./bot').bot;
 const botBuilder = require('./bot').botBuilder;
 const agenda = require('agenda')({

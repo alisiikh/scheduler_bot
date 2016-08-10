@@ -16,8 +16,8 @@ module.exports = {
 		ensureHttps: false
 	},
 	bot: {
-		botAppId: '74e0ce5a-1742-4540-9abe-ce07ca95a07c',
-		botAppSecret: '3O09EvDOJK4DMt6qeuwvMZq'
+		botAppId: process.env.BOT_FRAMEWORK_APP_ID,
+		botAppSecret: process.env.BOT_FRAMEWORK_APP_SECRET
 	},
 	mongo: {
 		connection: databaseURL
