@@ -1,6 +1,7 @@
 'use strict';
 
 // TODO: Enable scheduling by exact date+time
+// TODO: More user friendly abort command
 
 // load system first
 require('./system');
@@ -231,11 +232,13 @@ bot.dialog('/command/repeat', [
         if (args && args.response) {
             session.userData.content = args.response;
 
-            agenda.every(session.userData.interval, 'repeatNotifications', {
+            var repeatNotificationsJob = agenda.create('repeatNotifications', {
                 address: session.message.address,
                 content: session.userData.content,
                 jobId: uuid.v4()
             });
+            repeatNotificationsJob.repeatEvery(session.userData.interval).save();
+            agenda.start();
 
             session.endDialog(`Notification has been scheduled for repeating, I will send you back every '${session.userData.interval}'`);
         } else {
