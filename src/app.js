@@ -238,7 +238,6 @@ bot.dialog('/command/repeat', [
                 jobId: uuid.v4()
             });
             repeatNotificationsJob.repeatEvery(session.userData.interval).save();
-            agenda.start();
 
             session.endDialog(`Notification has been scheduled for repeating, I will send you back every '${session.userData.interval}'`);
         } else {
