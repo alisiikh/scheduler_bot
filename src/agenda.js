@@ -13,7 +13,7 @@ const agenda = require('agenda')({
 
 agenda.define('sendNotifications', (job, done) => {
     const jobData = job.attrs.data;
-    const content = MDUtil.adaptToMarkdown(jobData.content);
+    const content = MDUtil.convertPlainTextToMarkdown(jobData.content);
     const address = jobData.address;
 
     console.log(`Job 'sendNotifications' is fired for ${address.user.name}!`);
@@ -28,7 +28,7 @@ agenda.define('sendNotifications', (job, done) => {
 
 agenda.define('repeatNotifications', (job, done) => {
     const jobData = job.attrs.data;
-    const content = MDUtil.adaptToMarkdown(jobData.content);
+    const content = MDUtil.convertPlainTextToMarkdown(jobData.content);
     const address = jobData.address;
 
     console.log(`Job 'repeatNotifications' is fired for ${address.user.name}!`);
