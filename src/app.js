@@ -21,6 +21,7 @@ const BotUtil = require('./util/botutil');
 
 const agendaJobInfoTmpl = swig.compileFile('template/md/agenda_job_info.md');
 const startCommandPromptTmpl = swig.compileFile('template/md/start_command_prompt.md');
+const cancelCommandTmpl = swig.compileFile('template/md/cancel_command.md');
 
 bot.on('conversationUpdate', (message) => {
     // Check for group conversations
@@ -87,7 +88,7 @@ bot.use(botBuilder.Middleware.dialogVersion({
 bot.use(botBuilder.Middleware.convertSkypeGroupMessages());
 bot.use(botBuilder.Middleware.sendTyping());
 
-bot.endConversationAction('cancel', 'You cancelled.', { matches: /(\/)?cancel$/i });
+bot.endConversationAction('cancel', cancelCommandTmpl(), { matches: /(\/)?cancel$/i });
 // bot.beginDialogAction('help', '/help', { matches: /^help/i });
 
 bot.dialog('/', intents);
@@ -145,19 +146,13 @@ intents.matches(/(\/)?start$/i, [
     },
     (session, args) => {
         if (!args.response) {
-            session.endDialog("You cancelled.");
+            session.endDialog(cancelCommandTmpl());
         } else {
             const command = BotUtil.parseCommandName(args.response);
             session.userData.command = command;
 
             session.beginDialog(`/command/${command}`);
         }
-    }
-]);
-
-intents.matches(/kapusta/gi, [
-    (session) => {
-        session.endDialog(`Who said 'kapusta'? How dare you, mr. ${session.userData.contact.name}?!`);
     }
 ]);
 
@@ -179,7 +174,7 @@ bot.dialog('/command/schedule', [
                 next();
             }
         } else {
-            session.endDialog("You cancelled.");
+            session.endDialog(cancelCommandTmpl());
         }
     },
     (session) => {
@@ -197,7 +192,7 @@ bot.dialog('/command/schedule', [
 
             session.endDialog(`Notification has been scheduled, I will send you back in '${session.userData.interval}'`);
         } else {
-            session.endDialog("You cancelled.");
+            session.endDialog(cancelCommandTmpl());
         }
     }
 ]);
@@ -226,7 +221,7 @@ bot.dialog('/command/repeat', [
                 next();
             }
         } else {
-            session.endDialog("You cancelled.");
+            session.endDialog(cancelCommandTmpl());
         }
     },
     (session) => {
@@ -245,7 +240,7 @@ bot.dialog('/command/repeat', [
 
             session.endDialog(`Notification has been scheduled for repeating, I will send you back every '${session.userData.interval}'`);
         } else {
-            session.endDialog("You cancelled.");
+            session.endDialog(cancelCommandTmpl());
         }
     }
 ]);
@@ -296,7 +291,7 @@ bot.dialog('/command/abort', [
     },
     (session, args) => {
         if (!args.response) {
-            session.endDialog("You cancelled.");
+            session.endDialog(cancelCommandTmpl());
         } else {
             const jobsIds = session.dialogData.jobsIds;
             const jobsIndexes = args.response.split(",")
