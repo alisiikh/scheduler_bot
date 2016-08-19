@@ -258,7 +258,7 @@ bot.dialog('/command/abort', [
                 session.endDialog("Failed to query your running jobs, please try next time.");
             } else {
                 if (jobs.length > 0) {
-                    let text = 'Please send me back a number of the job you want to stop: \n\n';
+                    let text = 'Please send me back a number of the job you want to stop: \n\n  ';
                     const jobsIds = [];
 
                     jobs.forEach((job, idx) => {
