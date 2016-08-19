@@ -259,7 +259,7 @@ bot.dialog('/command/abort', [
                 session.endDialog("Failed to query your running jobs, please try next time.");
             } else {
                 if (jobs.length > 0) {
-                    let text = 'Please send me back a number of the job you want to stop: ' + os.EOL;
+                    let text = 'Please send me back a number of the job you want to stop: \r\n';
                     const jobsIds = [];
 
                     jobs.forEach((job, idx) => {
@@ -276,7 +276,7 @@ bot.dialog('/command/abort', [
                             nextRunAt: job.attrs.nextRunAt,
                             content: content
                         });
-                        text += os.EOL;
+                        text += '\r\n';
                     });
                     session.dialogData.jobsIds = jobsIds;
 
