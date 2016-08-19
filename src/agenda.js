@@ -1,6 +1,6 @@
 'use strict';
 
-const MDUtil = require('./util/mdutil');
+const MD = require('./util/mdutil');
 const bot = require('./bot').bot;
 const botBuilder = require('./bot').botBuilder;
 const agenda = require('agenda')({
@@ -13,14 +13,14 @@ const agenda = require('agenda')({
 
 agenda.define('sendNotifications', (job, done) => {
     const jobData = job.attrs.data;
-    const content = MDUtil.convertPlainTextToMarkdown(jobData.content);
+    const content = MD.convertPlainTextToMarkdown(jobData.content);
     const address = jobData.address;
 
     console.log(`Job 'sendNotifications' is fired for ${address.user.name}!`);
 
     const message = new botBuilder.Message()
         .address(address)
-        .text(`Your one-time reminder:\n\n${content}`);
+        .text(`Your one-time reminder:${MD.nl()}${content}`);
     bot.send(message);
 
     done();
@@ -28,7 +28,7 @@ agenda.define('sendNotifications', (job, done) => {
 
 agenda.define('repeatNotifications', (job, done) => {
     const jobData = job.attrs.data;
-    const content = MDUtil.convertPlainTextToMarkdown(jobData.content);
+    const content = MD.convertPlainTextToMarkdown(jobData.content);
     const address = jobData.address;
 
     console.log(`Job 'repeatNotifications' is fired for ${address.user.name}!`);

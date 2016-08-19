@@ -6,26 +6,30 @@
 // load system first
 require('./system');
 
-const bot = require('./bot').bot;
-const botBuilder = require('./bot').botBuilder;
-const agenda = require('./agenda');
+const MD = require('./util/mdutil');
+const swig = require('./swig');
 const humanInterval = require('human-interval');
 const cronParser = require('cron-parser');
-const Contact = require('./model').Contact;
-const intents = new botBuilder.IntentDialog({ intentThreshold: 0.01 });
 const uuid = require('node-uuid');
+
+const Contact = require('./model').Contact;
+
+const agenda = require('./agenda');
+const bot = require('./bot').bot;
+const botBuilder = require('./bot').botBuilder;
+const intents = new botBuilder.IntentDialog({ intentThreshold: 0.01 });
 const BotUtil = require('./util/botutil');
-const swig = require('./swig');
+
 
 const jobAbortInfoTmpl = swig.compileFile('template/md/job_abort_info.md');
 const startPromptTmpl = swig.compileFile('template/md/start_prompt.md');
 
-bot.on('conversationUpdate', function (message) {
+bot.on('conversationUpdate', (message) => {
     // Check for group conversations
     if (message.address.conversation.isGroup) {
         // Send a hello message when bot is added
         if (message.membersAdded) {
-            message.membersAdded.forEach(function (identity) {
+            message.membersAdded.forEach((identity) => {
                 const reply = new botBuilder.Message()
                     .address(message.address);
                 if (identity.id === message.address.bot.id) {
@@ -40,7 +44,7 @@ bot.on('conversationUpdate', function (message) {
 
         // Send a goodbye message when bot is removed
         if (message.membersRemoved) {
-            message.membersRemoved.forEach(function (identity) {
+            message.membersRemoved.forEach((identity) => {
                 const reply = new botBuilder.Message()
                     .address(message.address);
                 if (identity.id === message.address.bot.id) {
@@ -55,23 +59,23 @@ bot.on('conversationUpdate', function (message) {
     }
 });
 
-bot.on('contactRelationUpdate', function (message) {
+bot.on('contactRelationUpdate', (message) => {
     if (message.action === 'add') {
         const name = message.user ? message.user.name : null;
         const reply = new botBuilder.Message()
             .address(message.address)
-            .text("Hello %s... Thanks for having me. \n\nType in 'start' command to start", name || 'there');
+            .text(`Hello ${name || 'there'}... Thanks for having me.${MD.nl()}Type in 'start' command to start`);
         bot.send(reply);
     } else {
         // delete their data
     }
 });
 
-bot.on('typing', function (message) {
+bot.on('typing', (message) => {
     // User is typing
 });
 
-bot.on('deleteUserData', function (message) {
+bot.on('deleteUserData', (message) => {
     // User asked to delete their data
 });
 
@@ -101,7 +105,7 @@ intents.onDefault([
             session.endDialog();
         } else {
             console.log(`Received the message: '${JSON.stringify(message, null, 3)}', sending a hint`);
-            session.endDialog("To start, please type in 'start' command. \n\nType 'cancel' anytime to discard conversation to start from scratch.");
+            session.endDialog(`To start, please type in 'start' command.${MD.nl()}Type 'cancel' anytime to discard conversation to start from scratch.`);
         }
     }
 ]);
@@ -135,7 +139,7 @@ intents.matches(/(\/)?start$/i, [
         const prompt = startPromptTmpl();
         session.beginDialog('/command', {
             prompt: prompt,
-            retryPrompt: `Sorry, I don't understand you, please try again!\n\n${prompt}`,
+            retryPrompt: `Sorry, I don't understand you, please try again!${MD.nl()}${prompt}`,
             maxRetries: 3
         });
     },
@@ -162,7 +166,7 @@ bot.dialog('/command', botBuilder.DialogAction.validatedPrompt(
 
 bot.dialog('/command/schedule', [
     (session) => {
-        botBuilder.Prompts.text(session, 'Type in some time interval, \n\ne.g. 5 minutes, 10 seconds, 8 hours, etc.');
+        botBuilder.Prompts.text(session, `Type in some time interval,${MD.nl()}e.g. 5 minutes, 10 seconds, 8 hours, etc.`);
     },
     (session, args, next) => {
         if (args && args.response) {
@@ -200,7 +204,7 @@ bot.dialog('/command/schedule', [
 
 bot.dialog('/command/repeat', [
     (session) => {
-        botBuilder.Prompts.text(session, 'Type in some time interval, \n\ne.g. 5 minutes, 10 seconds, 8 hours, etc.');
+        botBuilder.Prompts.text(session, `Type in some time interval,${MD.nl()}e.g. 5 minutes, 10 seconds, 8 hours, etc.`);
     },
     (session, args, next) => {
         if (args && args.response) {
@@ -253,12 +257,12 @@ bot.dialog('/command/abort', [
             $or: [{name: 'sendNotifications'}, {name: 'repeatNotifications'}],
             'data.address.user.id': address.user.id,
             'data.jobId': {$exists: true}
-        }, function (err, /* Array */ jobs) {
+        }, (err, jobs) => {
             if (err) {
                 session.endDialog("Failed to query your running jobs, please try next time.");
             } else {
                 if (jobs.length > 0) {
-                    let text = 'Please send me back a number of the job you want to stop: \n\n  ';
+                    let text = `Please send me back a number of the job you want to stop:${MD.nl()}`;
                     const jobsIds = [];
 
                     jobs.forEach((job, idx) => {
@@ -274,7 +278,7 @@ bot.dialog('/command/abort', [
                             nextRunAt: job.attrs.nextRunAt,
                             content: content
                         });
-                        text += '\n\n';
+                        text += MD.nl();
                     });
                     session.dialogData.jobsIds = jobsIds;
 

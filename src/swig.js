@@ -1,5 +1,10 @@
 const swig = require('swig');
 
+swig.init({
+    encoding: 'utf8',
+    tzOffset: 360  // CDT timezone offset
+});
+
 swig.setFilter('excerpt', function (input, length) {
     if (typeof input !== 'string') {
         throw new Error("Filter 'excerpt' only supports String variable as an input");
