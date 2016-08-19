@@ -19,6 +19,7 @@ agenda.define('sendNotifications', (job, done) => {
     console.log(`Job 'sendNotifications' is fired for ${address.user.name}!`);
 
     const message = new botBuilder.Message()
+        .textFormat('markdown')
         .address(address)
         .text(`Your one-time reminder:${MD.nl()}${content}`);
     bot.send(message);
@@ -34,6 +35,7 @@ agenda.define('repeatNotifications', (job, done) => {
     console.log(`Job 'repeatNotifications' is fired for ${address.user.name}!`);
 
     const message = new botBuilder.Message()
+        .textFormat('markdown')
         .address(address)
         .text(`Your repeatable reminder:\n\n${content}`);
     bot.send(message);

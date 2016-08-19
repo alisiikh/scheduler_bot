@@ -21,8 +21,8 @@ const intents = new botBuilder.IntentDialog({ intentThreshold: 0.01 });
 const BotUtil = require('./util/botutil');
 
 
-const jobAbortInfoTmpl = swig.compileFile('template/md/job_abort_info.md');
-const startPromptTmpl = swig.compileFile('template/md/start_prompt.md');
+const agendaJobInfoTmpl = swig.compileFile('template/md/agenda_job_info.md');
+const startCommandPromptTmpl = swig.compileFile('template/md/start_command_prompt.md');
 
 bot.on('conversationUpdate', (message) => {
     // Check for group conversations
@@ -96,7 +96,7 @@ bot.endConversationAction('cancel', 'You cancelled.', { matches: /(\/)?cancel$/i
 bot.dialog('/', intents);
 
 intents.onDefault([
-    (session, args, next) => {
+    (session) => {
         let message = session.message;
         let address = message.address;
 
@@ -135,8 +135,8 @@ intents.matches(/(\/)?start$/i, [
                 }
             });
     },
-    (session, args) => {
-        const tmpl = MD.convertPlainTextToMarkdown(startPromptTmpl());
+    (session) => {
+        const tmpl = MD.convertPlainTextToMarkdown(startCommandPromptTmpl());
         const prompt = tmpl;
         const retryPrompt = `Sorry, I don't understand you, please try again!${MD.nl()}${tmpl}`;
 
@@ -159,7 +159,7 @@ intents.matches(/(\/)?start$/i, [
 ]);
 
 intents.matches(/kapusta/gi, [
-    (session, args, next) => {
+    (session) => {
         session.endDialog(`Who said 'kapusta'? How dare you, mr. ${session.userData.contact.name}?!`);
     }
 ]);
@@ -185,10 +185,10 @@ bot.dialog('/command/schedule', [
             session.endDialog("You cancelled.");
         }
     },
-    (session, args, next) => {
+    (session) => {
         botBuilder.Prompts.text(session, 'Type in the content which you want to schedule');
     },
-    (session, args, next) => {
+    (session, args) => {
         if (args && args.response) {
             session.userData.content = args.response;
 
@@ -232,10 +232,10 @@ bot.dialog('/command/repeat', [
             session.endDialog("You cancelled.");
         }
     },
-    (session, args, next) => {
+    (session) => {
         botBuilder.Prompts.text(session, 'Type in the content which you want to repeat');
     },
-    (session, args, next) => {
+    (session, args) => {
         if (args && args.response) {
             session.userData.content = args.response;
 
@@ -274,7 +274,7 @@ bot.dialog('/command/abort', [
 
                         jobsIds.push(jobId);
 
-                        text += jobAbortInfoTmpl({
+                        text += agendaJobInfoTmpl({
                             idx: ++idx,
                             jobName: job.attrs.name,
                             lastRunAt: job.attrs.lastRunAt,
@@ -297,7 +297,7 @@ bot.dialog('/command/abort', [
             }
         });
     },
-    (session, args, next) => {
+    (session, args) => {
         if (!args.response || isNaN(args.response)) {
             session.endDialog("You cancelled.");
         } else {
