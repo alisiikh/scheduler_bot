@@ -298,10 +298,10 @@ bot.dialog('/command/abort', [
         });
     },
     (session, args, next) => {
-        if (!args.response) {
+        if (!args.response || isNaN(args.response)) {
             session.endDialog("You cancelled.");
         } else {
-            const jobIndex = args.response;
+            const jobIndex = parseInt(args.response) - 1;
             const jobsIds = session.dialogData.jobsIds;
 
             if (jobIndex > 0 && jobsIds.length > jobIndex) {
@@ -312,7 +312,7 @@ bot.dialog('/command/abort', [
 
                 session.endDialog();
             } else {
-                session.endDialog("Incorrect job id, cancelling action.");
+                session.endDialog("Incorrect index, cancelling action.");
             }
         }
     }
