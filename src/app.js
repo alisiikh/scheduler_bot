@@ -6,7 +6,6 @@
 // load system first
 require('./system');
 
-const os = require('os');
 const bot = require('./bot').bot;
 const botBuilder = require('./bot').botBuilder;
 const agenda = require('./agenda');
@@ -259,7 +258,7 @@ bot.dialog('/command/abort', [
                 session.endDialog("Failed to query your running jobs, please try next time.");
             } else {
                 if (jobs.length > 0) {
-                    let text = 'Please send me back a number of the job you want to stop: \r\n';
+                    let text = 'Please send me back a number of the job you want to stop: \n\n';
                     const jobsIds = [];
 
                     jobs.forEach((job, idx) => {
@@ -270,13 +269,12 @@ bot.dialog('/command/abort', [
 
                         text += jobAbortInfoTmpl({
                             idx: ++idx,
-                            jobId: jobId,
                             jobName: job.attrs.name,
                             lastRunAt: job.attrs.lastRunAt,
                             nextRunAt: job.attrs.nextRunAt,
                             content: content
                         });
-                        text += '\r\n';
+                        text += '\n\n';
                     });
                     session.dialogData.jobsIds = jobsIds;
 

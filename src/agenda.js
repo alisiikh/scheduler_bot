@@ -1,6 +1,5 @@
 'use strict';
 
-const os = require('os');
 const MDUtil = require('./util/mdutil');
 const bot = require('./bot').bot;
 const botBuilder = require('./bot').botBuilder;
@@ -21,7 +20,7 @@ agenda.define('sendNotifications', (job, done) => {
 
     const message = new botBuilder.Message()
         .address(address)
-        .text(`Your one-time reminder: ${os.EOL}${content}`);
+        .text(`Your one-time reminder:\n\n${content}`);
     bot.send(message);
 
     done();
@@ -36,7 +35,7 @@ agenda.define('repeatNotifications', (job, done) => {
 
     const message = new botBuilder.Message()
         .address(address)
-        .text(`Your repeatable reminder: ${os.EOL}${content}`);
+        .text(`Your repeatable reminder:\n\n${content}`);
     bot.send(message);
 
     done();
