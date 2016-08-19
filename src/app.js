@@ -136,19 +136,24 @@ intents.matches(/(\/)?start$/i, [
             });
     },
     (session) => {
-        const commands = BotUtil.getAvailableCommands();
-        botBuilder.Prompts.choice(session, `Dear ${session.userData.contact.name}, please choose what you want to do :)`, commands);
+        const tmpl = MD.convertPlainTextToMarkdown(startCommandPromptTmpl());
+        const prompt = tmpl;
+        const retryPrompt = `Sorry, I don't understand you, please try again!${MD.nl()}${tmpl}`;
+
+        session.beginDialog('/command', {
+            prompt: prompt,
+            retryPrompt: retryPrompt,
+            maxRetries: 3
+        });
     },
     (session, args) => {
         if (!args.response) {
             session.endDialog("You cancelled.");
         } else {
-            const commands = BotUtil.getAvailableCommands();
-            const command = commands[args.response.entity];
-
+            const command = BotUtil.parseCommandName(args.response);
             session.userData.command = command;
 
-            session.beginDialog(`/${command}`);
+            session.beginDialog(`/command/${command}`);
         }
     }
 ]);
@@ -159,7 +164,10 @@ intents.matches(/kapusta/gi, [
     }
 ]);
 
-bot.dialog('/schedule', [
+bot.dialog('/command', botBuilder.DialogAction.validatedPrompt(
+    botBuilder.PromptType.text, (response) => BotUtil.isBotCommand(response)));
+
+bot.dialog('/command/schedule', [
     (session) => {
         botBuilder.Prompts.text(session, `Type in some time interval,${MD.nl()}e.g. 5 minutes, 10 seconds, 8 hours, etc.`);
     },
@@ -197,7 +205,7 @@ bot.dialog('/schedule', [
     }
 ]);
 
-bot.dialog('/repeat', [
+bot.dialog('/command/repeat', [
     (session) => {
         botBuilder.Prompts.text(session, `Type in some time interval,${MD.nl()}e.g. 5 minutes, 10 seconds, 8 hours, etc.`);
     },
@@ -231,7 +239,7 @@ bot.dialog('/repeat', [
         if (args && args.response) {
             session.userData.content = args.response;
 
-            const repeatNotificationsJob = agenda.create('repeatNotifications', {
+            var repeatNotificationsJob = agenda.create('repeatNotifications', {
                 address: session.message.address,
                 content: session.userData.content,
                 jobId: uuid.v4()
@@ -245,7 +253,7 @@ bot.dialog('/repeat', [
     }
 ]);
 
-bot.dialog('/abort', [
+bot.dialog('/command/abort', [
     (session, args, next) => {
         const address = session.message.address;
         agenda.jobs({
@@ -310,7 +318,7 @@ bot.dialog('/abort', [
     }
 ]);
 
-bot.dialog('/abortall', [
+bot.dialog('/command/abortall', [
     (session) => {
         agenda.schedule('now', 'abortNotifications', {
             address: session.message.address,
