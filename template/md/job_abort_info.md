@@ -1,4 +1,4 @@
-*index*: **{{ idx }}**,
-*name*: {{ jobName }},
-*lastRunAt*: {{ lastRunAt | date('H:i d-m-Y') | default('no') }},
-*nextRunAt*: {{ nextRunAt | date('H:i d-m-Y') | default('no') }}, content: {{ content | excerpt(30) }}
+index: **{{ idx }}**, 
+name: {{ jobName }}, 
+lastRunAt: {{ lastRunAt | date('H:i d-m-Y') | default('no') }}, 
+nextRunAt: {{ nextRunAt | date('H:i d-m-Y') | default('no') }}, content: {{ content | excerpt(30) }}
