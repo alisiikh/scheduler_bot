@@ -1,3 +1,5 @@
+'use strict';
+
 const swig = require('swig');
 
 swig.setDefaultTZOffset(180); // CDT

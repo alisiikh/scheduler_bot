@@ -5,7 +5,7 @@ const bot = require('./bot').bot;
 const botBuilder = require('./bot').botBuilder;
 const agenda = require('agenda')({
     db: {
-        address: require('./config').mongo.connection
+        address: require('./config').mongo.databaseURL
     },
     processEvery: '30 seconds',
     maxConcurrency: 20
@@ -19,7 +19,6 @@ agenda.define('sendNotifications', (job, done) => {
     console.log(`Job 'sendNotifications' is fired for ${address.user.name}!`);
 
     const message = new botBuilder.Message()
-        .textFormat('markdown')
         .address(address)
         .text(`Your one-time reminder:${MD.nl()}${content}`);
     bot.send(message);
@@ -35,9 +34,8 @@ agenda.define('repeatNotifications', (job, done) => {
     console.log(`Job 'repeatNotifications' is fired for ${address.user.name}!`);
 
     const message = new botBuilder.Message()
-        .textFormat('markdown')
         .address(address)
-        .text(`Your repeatable reminder:\n\n${content}`);
+        .text(`Your repeatable reminder:${MD.nl()}${content}`);
     bot.send(message);
 
     done();

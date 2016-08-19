@@ -1,6 +1,6 @@
-const Contact = require('./../model').Contact;
+'use strict';
 
-const COMMAND_NAME_REGEX = /[\/]?(schedule|repeat|abort|abortall)$/i;
+const Contact = require('./../model').Contact;
 
 class BotUtil {
 
@@ -31,19 +31,13 @@ class BotUtil {
         }
     }
 
-    static parseCommandName(response) {
-        if (BotUtil.isBotCommand(response)) {
-            const match = COMMAND_NAME_REGEX.exec(response);
-            if (match.length > 0) {
-                return match[1];
-            }
-        } else {
-            return null;
-        }
-    }
-
-    static isBotCommand(response) {
-        return COMMAND_NAME_REGEX.test(response);
+    static getAvailableCommands() {
+        return {
+            "Schedule one-time notification": "schedule",
+            "Schedule repeatable notification": "repeat",
+            "Abort of your running jobs": "abort",
+            "Abort all of your running jobs": "abortall"
+        };
     }
 }
 

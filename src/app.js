@@ -11,6 +11,7 @@ const swig = require('./swig');
 const humanInterval = require('human-interval');
 const cronParser = require('cron-parser');
 const uuid = require('node-uuid');
+const botCfg = require('./config').bot;
 
 const Contact = require('./model').Contact;
 
@@ -80,14 +81,13 @@ bot.on('deleteUserData', (message) => {
 });
 
 bot.use(botBuilder.Middleware.dialogVersion({
-    version: 1.0,
+    version: botCfg.dialogVersion,
     resetCommand: /(\/)?reset$/i,
-    message: 'Conversation data has been cleared'
+    message: 'Oops, I forgot everything. What were we talking about?'
 }));
 
-// convert group message to GOOD format (until fixed by Skype guys)
+// TODO: remove this middleware if Skype guys change group messages format
 bot.use(botBuilder.Middleware.convertSkypeGroupMessages());
-// bot.use(botBuilder.Middleware.ignoreNotDirectGroupMessages());
 bot.use(botBuilder.Middleware.sendTyping());
 
 bot.endConversationAction('cancel', 'You cancelled.', { matches: /(\/)?cancel$/i });
@@ -136,24 +136,19 @@ intents.matches(/(\/)?start$/i, [
             });
     },
     (session) => {
-        const tmpl = MD.convertPlainTextToMarkdown(startCommandPromptTmpl());
-        const prompt = tmpl;
-        const retryPrompt = `Sorry, I don't understand you, please try again!${MD.nl()}${tmpl}`;
-
-        session.beginDialog('/command', {
-            prompt: prompt,
-            retryPrompt: retryPrompt,
-            maxRetries: 3
-        });
+        const commands = BotUtil.getAvailableCommands();
+        botBuilder.Prompts.choice(session, `Dear ${session.userData.contact.name}, please choose what you want to do :)`, commands);
     },
     (session, args) => {
         if (!args.response) {
             session.endDialog("You cancelled.");
         } else {
-            const command = BotUtil.parseCommandName(args.response);
+            const commands = BotUtil.getAvailableCommands();
+            const command = commands[args.response.entity];
+
             session.userData.command = command;
 
-            session.beginDialog(`/command/${command}`);
+            session.beginDialog(`/${command}`);
         }
     }
 ]);
@@ -164,10 +159,7 @@ intents.matches(/kapusta/gi, [
     }
 ]);
 
-bot.dialog('/command', botBuilder.DialogAction.validatedPrompt(
-    botBuilder.PromptType.text, (response) => BotUtil.isBotCommand(response)));
-
-bot.dialog('/command/schedule', [
+bot.dialog('/schedule', [
     (session) => {
         botBuilder.Prompts.text(session, `Type in some time interval,${MD.nl()}e.g. 5 minutes, 10 seconds, 8 hours, etc.`);
     },
@@ -205,7 +197,7 @@ bot.dialog('/command/schedule', [
     }
 ]);
 
-bot.dialog('/command/repeat', [
+bot.dialog('/repeat', [
     (session) => {
         botBuilder.Prompts.text(session, `Type in some time interval,${MD.nl()}e.g. 5 minutes, 10 seconds, 8 hours, etc.`);
     },
@@ -239,7 +231,7 @@ bot.dialog('/command/repeat', [
         if (args && args.response) {
             session.userData.content = args.response;
 
-            var repeatNotificationsJob = agenda.create('repeatNotifications', {
+            const repeatNotificationsJob = agenda.create('repeatNotifications', {
                 address: session.message.address,
                 content: session.userData.content,
                 jobId: uuid.v4()
@@ -253,7 +245,7 @@ bot.dialog('/command/repeat', [
     }
 ]);
 
-bot.dialog('/command/abort', [
+bot.dialog('/abort', [
     (session, args, next) => {
         const address = session.message.address;
         agenda.jobs({
@@ -318,7 +310,7 @@ bot.dialog('/command/abort', [
     }
 ]);
 
-bot.dialog('/command/abortall', [
+bot.dialog('/abortall', [
     (session) => {
         agenda.schedule('now', 'abortNotifications', {
             address: session.message.address,

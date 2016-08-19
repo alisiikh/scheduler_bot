@@ -1,7 +1,7 @@
 const os = require('os');
 
-String.prototype.replaceAll = function(search, replacement) {
-    var target = this;
+String.prototype.replaceAll = (search, replacement) => {
+    const target = this;
     return target.replace(new RegExp(search, 'g'), replacement);
 };
 
@@ -18,7 +18,8 @@ class MDUtil {
     }
 
     static nl() {
-        return `\n\n`;
+        // TODO: this is super weird and markdown doesn't work fine in Skype :(
+        return `${os.EOL}${os.EOL}`;
     }
 }
 

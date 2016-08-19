@@ -17,10 +17,11 @@ module.exports = {
 	},
 	bot: {
 		botAppId: process.env.BOT_FRAMEWORK_APP_ID,
-		botAppSecret: process.env.BOT_FRAMEWORK_APP_SECRET
+		botAppSecret: process.env.BOT_FRAMEWORK_APP_SECRET,
+		dialogVersion: 1.1
 	},
 	mongo: {
-		connection: databaseURL
+		databaseURL: databaseURL
 	}
 };
 
