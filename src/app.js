@@ -136,10 +136,13 @@ intents.matches(/(\/)?start$/i, [
             });
     },
     (session, args) => {
-        const prompt = startPromptTmpl();
+        const tmpl = MD.convertPlainTextToMarkdown(startPromptTmpl());
+        const prompt = tmpl;
+        const retryPrompt = `Sorry, I don't understand you, please try again!${MD.nl()}${tmpl}`;
+
         session.beginDialog('/command', {
             prompt: prompt,
-            retryPrompt: `Sorry, I don't understand you, please try again!${MD.nl()}${prompt}`,
+            retryPrompt: retryPrompt,
             maxRetries: 3
         });
     },
