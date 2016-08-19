@@ -1,8 +1,5 @@
 'use strict';
 
-// TODO: Enable scheduling by exact date+time
-// TODO: More user friendly abort command
-
 // load system first
 require('./system');
 
