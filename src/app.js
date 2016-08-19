@@ -6,6 +6,7 @@
 // load system first
 require('./system');
 
+const os = require('os');
 const bot = require('./bot').bot;
 const botBuilder = require('./bot').botBuilder;
 const agenda = require('./agenda');
@@ -258,7 +259,7 @@ bot.dialog('/command/abort', [
                 session.endDialog("Failed to query your running jobs, please try next time.");
             } else {
                 if (jobs.length > 0) {
-                    let text = 'Please send me back an id of a job you want to cancel:\n\n';
+                    let text = 'Please send me back a number of the job you want to stop: ' + os.EOL;
                     const jobsIds = [];
 
                     jobs.forEach((job, idx) => {
@@ -275,7 +276,7 @@ bot.dialog('/command/abort', [
                             nextRunAt: job.attrs.nextRunAt,
                             content: content
                         });
-
+                        text += os.EOL;
                     });
                     session.dialogData.jobsIds = jobsIds;
 
@@ -295,11 +296,13 @@ bot.dialog('/command/abort', [
         if (!args.response) {
             session.endDialog("You cancelled.");
         } else {
-            const jobId = args.response;
-            if (session.dialogData.jobsIds.indexOf(jobId) !== -1) {
+            const jobIndex = args.response;
+            const jobsIds = session.dialogData.jobsIds;
+
+            if (jobIndex > 0 && jobsIds.length > jobIndex) {
                 agenda.schedule('now', 'abortOneNotification', {
                     address: session.message.address,
-                    jobId: args.response
+                    jobId: jobsIds[jobIndex]
                 });
 
                 session.endDialog();

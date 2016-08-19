@@ -5,11 +5,13 @@ String.prototype.replaceAll = function(search, replacement) {
 
 class MDUtil {
     static convertPlainTextToMarkdown(content) {
-        if (content.indexOf("\r\n") != -1) {
-            return content.replaceAll("\r\n", "\r\n\r\n");
-        } else {
-            return content;
-        }
+        // if (content.indexOf("\r\n") != -1) {
+        //     return content.replaceAll("\r\n", "\r\n\r\n");
+        // } else {
+        //     return content;
+        // }
+
+        return content;
     }
 }
 
