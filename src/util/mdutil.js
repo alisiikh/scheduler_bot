@@ -18,7 +18,7 @@ class MDUtil {
     }
 
     static nl() {
-        return `    \n`;
+        return `\n\n`;
     }
 }
 
