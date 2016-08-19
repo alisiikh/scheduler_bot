@@ -18,7 +18,7 @@ class MDUtil {
     }
 
     static nl() {
-        return `  ${os.EOL}`;
+        return `  \n`;
     }
 }
 
