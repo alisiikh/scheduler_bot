@@ -1,9 +1,6 @@
 const swig = require('swig');
 
-swig.init({
-    encoding: 'utf8',
-    tzOffset: 360  // CDT timezone offset
-});
+swig.setDefaultTZOffset(360); // CDT
 
 swig.setFilter('excerpt', function (input, length) {
     if (typeof input !== 'string') {
