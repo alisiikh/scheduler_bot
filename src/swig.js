@@ -1,6 +1,6 @@
 const swig = require('swig');
 
-swig.setDefaultTZOffset(360); // CDT
+swig.setDefaultTZOffset(180); // CDT
 
 swig.setFilter('excerpt', function (input, length) {
     if (typeof input !== 'string') {
