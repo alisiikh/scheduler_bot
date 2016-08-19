@@ -295,21 +295,30 @@ bot.dialog('/command/abort', [
         });
     },
     (session, args) => {
-        if (!args.response || isNaN(args.response)) {
+        if (!args.response) {
             session.endDialog("You cancelled.");
         } else {
-            const jobIndex = parseInt(args.response) - 1;
             const jobsIds = session.dialogData.jobsIds;
+            const jobsIndexes = args.response.split(",")
+                .map((jobIndex) => parseInt(jobIndex) - 1);
 
-            if (jobIndex > 0 && jobsIds.length > jobIndex) {
-                agenda.schedule('now', 'abortOneNotification', {
-                    address: session.message.address,
-                    jobId: jobsIds[jobIndex]
-                });
 
-                session.endDialog();
+            var hasErrors = false;
+            jobsIndexes.forEach((jobIndex) => {
+                if (isNaN(jobIndex) || jobIndex < 0 || jobIndex > jobsIds.length) {
+                    hasErrors = true;
+                } else {
+                    agenda.schedule('now', 'abortOneNotification', {
+                        address: session.message.address,
+                        jobId: jobsIds[jobIndex]
+                    });
+                }
+            });
+
+            if (hasErrors) {
+                session.endDialog("Finished abort command with errors");
             } else {
-                session.endDialog("Incorrect index, cancelling action.");
+                session.endDialog();
             }
         }
     }
