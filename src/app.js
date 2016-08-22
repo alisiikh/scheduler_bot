@@ -262,10 +262,12 @@ bot.dialog('/command/firenow', [
                     const message = new botBuilder.Message()
                         .address(address)
                         .text(`Firing ${jobs.length} jobs scheduled for current conversation`);
-                    bot.send(message);
-
-                    jobs.forEach((job) => {
-                        agenda.now('sendNotifications', job.attrs.data);
+                    bot.send(message, (err) => {
+                        if (!err) {
+                            jobs.forEach((job) => {
+                                agenda.now('sendNotifications', job.attrs.data);
+                            });
+                        }
                     });
 
                     session.endDialog();
