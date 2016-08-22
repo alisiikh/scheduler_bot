@@ -245,6 +245,39 @@ bot.dialog('/command/repeat', [
     }
 ]);
 
+bot.dialog('/command/firenow', [
+    (session) => {
+        const address = session.message.address;
+
+        agenda.jobs({
+            $or: [{name: 'sendNotifications'}, {name: 'repeatNotifications'}],
+            'data.address.user.id': address.user.id,
+            'data.address.conversation.id': address.conversation.id,
+            'nextRunAt': {$ne: null}
+        }, (err, jobs) => {
+            if (err) {
+                session.endDialog("Unexpected error, failed to run jobs. Please try again.");
+            } else {
+                if (jobs.length > 0) {
+                    const message = new botBuilder.Message()
+                        .address(address)
+                        .text(`Firing ${jobs.length} jobs scheduled for current conversation`);
+                    bot.send(message);
+
+                    jobs.forEach((job) => {
+                        agenda.now('sendNotifications', job.attrs.data);
+                    });
+
+                    session.endDialog();
+                } else {
+                    session.endDialog("You have no active jobs running in this chat");
+                }
+            }
+        });
+
+    }
+]);
+
 bot.dialog('/command/abort', [
     (session, args, next) => {
         const address = session.message.address;

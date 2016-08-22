@@ -1,6 +1,6 @@
 const Contact = require('./../model').Contact;
 
-const COMMAND_NAME_REGEX = /[\/]?(schedule|repeat|abort|abortall)$/i;
+const COMMAND_NAME_REGEX = /[\/]?(schedule|repeat|abort|abortall|firenow)$/i;
 
 class BotUtil {
 
