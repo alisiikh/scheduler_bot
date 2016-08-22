@@ -93,7 +93,7 @@ agenda.define('abortOneNotification', {priority: 'high'}, (job, done) => {
 });
 
 agenda.define("cleanUpFinishedNotifications", {priority: 'high'}, (job, done) => {
-    console.log(`Job ${job.name} has been started`);
+    console.log(`Job cleanUpFinishedNotifications has been started`);
 
     agenda.cancel({
         'nextRunAt': {$eq: null}
