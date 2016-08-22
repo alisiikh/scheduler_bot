@@ -20,7 +20,7 @@ agenda.define('sendNotifications', (job, done) => {
 
     const message = new botBuilder.Message()
         .address(address)
-        .text(`Your one-time reminder:${MD.nl()}${content}`);
+        .text(`${address.conversation.isGroup ? address.user.name + '\'s' : 'Your'} one-time reminder:${MD.nl()}${content}`);
     bot.send(message);
 
     done();
@@ -35,7 +35,7 @@ agenda.define('repeatNotifications', (job, done) => {
 
     const message = new botBuilder.Message()
         .address(address)
-        .text(`Your repeatable reminder:${MD.nl()}${content}`);
+        .text(`${address.conversation.isGroup ? address.user.name + '\'s' : 'Your'} repeatable reminder:${MD.nl()}${content}`);
     bot.send(message);
 
     done();
