@@ -22,6 +22,11 @@ module.exports = {
 	},
 	mongo: {
 		databaseURL: databaseURL
-	}
+	},
+    agenda: {
+	    processEvery: '30 seconds',
+        maxConcurrency: 20,
+        cleanUpInterval: '1 day'
+    }
 };
 

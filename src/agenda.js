@@ -3,12 +3,14 @@
 const MD = require('./util/mdutil');
 const bot = require('./bot').bot;
 const botBuilder = require('./bot').botBuilder;
+const config = require('./config');
+
 const agenda = require('agenda')({
     db: {
-        address: require('./config').mongo.databaseURL
+        address: config.mongo.databaseURL
     },
-    processEvery: '30 seconds',
-    maxConcurrency: 20
+    processEvery: config.agenda.processEvery,
+    maxConcurrency: config.agenda.maxConcurrency
 });
 
 agenda.define('sendNotifications', (job, done) => {
@@ -90,9 +92,30 @@ agenda.define('abortOneNotification', {priority: 'high'}, (job, done) => {
     done();
 });
 
+agenda.define("cleanUpFinishedNotifications", {priority: 'high'}, (job, done) => {
+    console.log(`Job ${job.name} has been started`);
+
+    agenda.cancel({
+        'nextRunAt': {$eq: null}
+    }, (err, numRemoved) => {
+        if (!err) {
+            if (numRemoved > 0) {
+                console.log(`Cleaned up ${numRemoved} non-active jobs`);
+            }
+        } else {
+            console.error("Failed to remove non-active jobs", err);
+        }
+    });
+
+    done();
+});
+
 agenda.on('ready', () => {
     console.log("Agenda successfully started and ready to receive job requests.");
     agenda.start();
+
+    console.log(`Starting jobs cleanup job with interval of ${config.agenda.cleanUpInterval}`);
+    agenda.every(config.agenda.cleanUpInterval, 'cleanUpFinishedNotifications');
 });
 
 module.exports = agenda;
