@@ -28,7 +28,9 @@ agenda.define('sendNotifications', (job, done) => {
 
     const message = new botBuilder.Message()
         .address(address)
-        .text(singeNotificationTmpl({ isGroup: address.conversation.isGroup, username: username, content: content }));
+        .text(singeNotificationTmpl({ isGroup: address.conversation.isGroup,
+            username: username,
+            content: content }));
     bot.send(message);
 
     done();
@@ -44,7 +46,9 @@ agenda.define('repeatNotifications', (job, done) => {
 
     const message = new botBuilder.Message()
         .address(address)
-        .text(repeatableNotificationTmpl({ isGroup: address.conversation.isGroup, username: username, content: content }));
+        .text(repeatableNotificationTmpl({ isGroup: address.conversation.isGroup,
+            username: username,
+            content: content }));
     bot.send(message);
 
     done();
