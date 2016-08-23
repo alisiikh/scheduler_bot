@@ -4,10 +4,10 @@ const MD = require('./util/mdutil');
 const bot = require('./bot').bot;
 const botBuilder = require('./bot').botBuilder;
 const config = require('./config');
-const nunjucks = require('./nunjucks');
+const nunjucks = require('./nunjucks').mdTmplEngine;
 
-const singeNotificationTmpl = nunjucks.getTemplate('md/single_notification.md');
-const repeatableNotificationTmpl = nunjucks.getTemplate('md/repeatable_notification.md');
+const singeNotificationTmpl = nunjucks.getTemplate('single_notification.md');
+const repeatableNotificationTmpl = nunjucks.getTemplate('repeatable_notification.md');
 
 const agenda = require('agenda')({
     db: {

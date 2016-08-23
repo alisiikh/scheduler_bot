@@ -4,10 +4,10 @@ const restify = require('restify');
 const bot = require('./bot').bot;
 const botConnector = require('./bot').botConnector;
 const serverCfg = require('./config').server;
-const swig = require('./swig');
+const nunjucks = require('./nunjucks').htmlTmplEngine;
 
-const privacyHtmlTmpl = swig.compileFile('template/html/privacy.html');
-const termsHtmlTmpl = swig.compileFile('template/html/terms.html');
+const privacyHtmlTmpl = nunjucks.getTemplate('privacy.html');
+const termsHtmlTmpl = nunjucks.getTemplate('terms.html');
 
 const server = restify.createServer({
     name: 'botServer'
@@ -19,7 +19,7 @@ server.use(restify.bodyParser({mapParams: true}));
 server.post('/api/v3/chat', botConnector.listen());
 
 server.get('/bot/terms', (req, res) => {
-    const body = termsHtmlTmpl();
+    const body = termsHtmlTmpl.render();
     res.writeHead(200, {
             'Content-Length': Buffer.byteLength(body),
             'Content-Type': 'text/html'
@@ -29,7 +29,7 @@ server.get('/bot/terms', (req, res) => {
 });
 
 server.get('/bot/privacy', (req, res) => {
-    const body = privacyHtmlTmpl();
+    const body = privacyHtmlTmpl.render();
     res.writeHead(200, {
             'Content-Length': Buffer.byteLength(body),
             'Content-Type': 'text/html'

@@ -1,5 +1,5 @@
 index: **{{ idx }}**, 
 name: {{ jobName }}, 
-lastRunAt: {{ lastRunAt | date('HH:mm DD-MM-Y') | default('no') }}, 
-nextRunAt: {{ nextRunAt | date('HH:mm DD-MM-Y') | default('no') }}, 
+lastRunAt: {{ lastRunAt | date('HH:mm DD-MM-Y') }}, 
+nextRunAt: {{ nextRunAt | date('HH:mm DD-MM-Y') }}, 
 content: {{ content | excerpt(30) }}

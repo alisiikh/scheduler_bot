@@ -4,7 +4,7 @@
 require('./system');
 
 const MD = require('./util/mdutil');
-const nunjucks = require('./nunjucks');
+const nunjucks = require('./nunjucks').mdTmplEngine;
 const humanInterval = require('human-interval');
 const cronParser = require('cron-parser');
 const uuid = require('node-uuid');
@@ -18,9 +18,9 @@ const botBuilder = require('./bot').botBuilder;
 const intents = new botBuilder.IntentDialog({ intentThreshold: 0.01 });
 const BotUtil = require('./util/botutil');
 
-const agendaJobInfoTmpl = nunjucks.getTemplate('md/agenda_job_info.md');
-const startCommandPromptTmpl = nunjucks.getTemplate('md/start_command_prompt.md');
-const cancelCommandTmpl = nunjucks.getTemplate('md/cancel_command.md');
+const agendaJobInfoTmpl = nunjucks.getTemplate('agenda_job_info.md');
+const startCommandPromptTmpl = nunjucks.getTemplate('start_command_prompt.md');
+const cancelCommandTmpl = nunjucks.getTemplate('cancel_command.md');
 
 bot.on('conversationUpdate', (message) => {
     // Check for group conversations

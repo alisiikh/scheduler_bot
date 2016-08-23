@@ -2,11 +2,9 @@ const nlib = require('nunjucks/src/lib');
 const nunjucks = require('nunjucks');
 const moment = require('moment');
 
-var env = nunjucks.configure("template", {
+const mdTmplEngine = nunjucks.configure("template/md", {
     autoescape: false
-});
-
-env.addFilter('excerpt', function(input, length) {
+}).addFilter('excerpt', function(input, length) {
     if (typeof input !== 'string') {
         throw new Error("Filter 'excerpt' only supports String variable as an input");
     }
@@ -20,9 +18,7 @@ env.addFilter('excerpt', function(input, length) {
     } else {
         return input;
     }
-});
-
-env.addFilter('date', function(date, format) {
+}).addFilter('date', function(date, format) {
     let result, args = [], obj;
 
     args.push(arguments);
@@ -40,4 +36,12 @@ env.addFilter('date', function(date, format) {
     return result;
 });
 
-module.exports = env;
+const htmlTmplEngine = nunjucks.configure("template/html", {
+    autoescape: true
+});
+
+module.exports = {
+    nunjucks: nunjucks,
+    mdTmplEngine: mdTmplEngine,
+    htmlTmplEngine: htmlTmplEngine
+};
