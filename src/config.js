@@ -18,7 +18,7 @@ module.exports = {
 	bot: {
 		botAppId: process.env.BOT_FRAMEWORK_APP_ID,
 		botAppSecret: process.env.BOT_FRAMEWORK_APP_SECRET,
-		dialogVersion: 1.1
+		dialogVersion: 1.2
 	},
 	mongo: {
 		databaseURL: databaseURL
