@@ -24,7 +24,10 @@
     "mongodb": "^2.2.5",
     "mongoose": "^4.5.8",
     "node-uuid": "^1.4.7",
-    "restify": "^4.1.1",
-    "swig": "^1.4.2"
+    "nunjucks": "^2.4.2",
+    "restify": "^4.1.1"
+  },
+  "devDependencies": {
+    "nunjucks-date-filter": "^0.1.1"
   }
 }

@@ -4,11 +4,10 @@ const MD = require('./util/mdutil');
 const bot = require('./bot').bot;
 const botBuilder = require('./bot').botBuilder;
 const config = require('./config');
-const swig = require('./swig');
+const nunjucks = require('./nunjucks');
 
-
-const singeNotificationTmpl = swig.compileFile('template/md/single_notification.md');
-const repeatableNotificationTmpl = swig.compileFile('template/md/repeatable_notification.md');
+const singeNotificationTmpl = nunjucks.getTemplate('md/single_notification.md');
+const repeatableNotificationTmpl = nunjucks.getTemplate('md/repeatable_notification.md');
 
 const agenda = require('agenda')({
     db: {
@@ -28,7 +27,8 @@ agenda.define('sendNotifications', (job, done) => {
 
     const message = new botBuilder.Message()
         .address(address)
-        .text(singeNotificationTmpl({ isGroup: address.conversation.isGroup,
+        .text(singeNotificationTmpl.render({
+            isGroup: address.conversation.isGroup,
             username: username,
             content: content }));
     bot.send(message);
@@ -46,7 +46,8 @@ agenda.define('repeatNotifications', (job, done) => {
 
     const message = new botBuilder.Message()
         .address(address)
-        .text(repeatableNotificationTmpl({ isGroup: address.conversation.isGroup,
+        .text(repeatableNotificationTmpl.render({
+            isGroup: address.conversation.isGroup,
             username: username,
             content: content }));
     bot.send(message);

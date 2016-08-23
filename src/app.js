@@ -4,7 +4,7 @@
 require('./system');
 
 const MD = require('./util/mdutil');
-const swig = require('./swig');
+const nunjucks = require('./nunjucks');
 const humanInterval = require('human-interval');
 const cronParser = require('cron-parser');
 const uuid = require('node-uuid');
@@ -18,10 +18,9 @@ const botBuilder = require('./bot').botBuilder;
 const intents = new botBuilder.IntentDialog({ intentThreshold: 0.01 });
 const BotUtil = require('./util/botutil');
 
-
-const agendaJobInfoTmpl = swig.compileFile('template/md/agenda_job_info.md');
-const startCommandPromptTmpl = swig.compileFile('template/md/start_command_prompt.md');
-const cancelCommandTmpl = swig.compileFile('template/md/cancel_command.md');
+const agendaJobInfoTmpl = nunjucks.getTemplate('md/agenda_job_info.md');
+const startCommandPromptTmpl = nunjucks.getTemplate('md/start_command_prompt.md');
+const cancelCommandTmpl = nunjucks.getTemplate('md/cancel_command.md');
 
 bot.on('conversationUpdate', (message) => {
     // Check for group conversations
@@ -88,7 +87,7 @@ bot.use(botBuilder.Middleware.dialogVersion({
 bot.use(botBuilder.Middleware.convertSkypeGroupMessages());
 bot.use(botBuilder.Middleware.sendTyping());
 
-bot.endConversationAction('cancel', cancelCommandTmpl(), { matches: /(\/)?cancel$/i });
+bot.endConversationAction('cancel', cancelCommandTmpl.render(), { matches: /(\/)?cancel$/i });
 // bot.beginDialogAction('help', '/help', { matches: /^help/i });
 
 bot.dialog('/', intents);
@@ -134,7 +133,7 @@ intents.matches(/(\/)?start$/i, [
             });
     },
     (session) => {
-        const tmpl = MD.convertPlainTextToMarkdown(startCommandPromptTmpl());
+        const tmpl = MD.convertPlainTextToMarkdown(startCommandPromptTmpl.render());
         const prompt = tmpl;
         const retryPrompt = `Sorry, I don't understand you, please try again!${MD.nl()}${tmpl}`;
 
@@ -146,7 +145,7 @@ intents.matches(/(\/)?start$/i, [
     },
     (session, args) => {
         if (!args.response) {
-            session.endDialog(cancelCommandTmpl());
+            session.endDialog(cancelCommandTmpl.render());
         } else {
             const command = BotUtil.parseCommandName(args.response);
             session.userData.command = command;
@@ -174,7 +173,7 @@ bot.dialog('/command/schedule', [
                 next();
             }
         } else {
-            session.endDialog(cancelCommandTmpl());
+            session.endDialog(cancelCommandTmpl.render());
         }
     },
     (session) => {
@@ -193,7 +192,7 @@ bot.dialog('/command/schedule', [
 
             session.endDialog(`Notification has been scheduled, I will send you back in '${session.userData.interval}'`);
         } else {
-            session.endDialog(cancelCommandTmpl());
+            session.endDialog(cancelCommandTmpl.render());
         }
     }
 ]);
@@ -222,7 +221,7 @@ bot.dialog('/command/repeat', [
                 next();
             }
         } else {
-            session.endDialog(cancelCommandTmpl());
+            session.endDialog(cancelCommandTmpl.render());
         }
     },
     (session) => {
@@ -242,7 +241,7 @@ bot.dialog('/command/repeat', [
 
             session.endDialog(`Notification has been scheduled for repeating, I will send you back every '${session.userData.interval}'`);
         } else {
-            session.endDialog(cancelCommandTmpl());
+            session.endDialog(cancelCommandTmpl.render());
         }
     }
 ]);
@@ -303,13 +302,14 @@ bot.dialog('/command/abort', [
 
                         jobsIds.push(jobId);
 
-                        text += agendaJobInfoTmpl({
+                        text += agendaJobInfoTmpl.render({
                             idx: ++idx,
                             jobName: job.attrs.name,
                             lastRunAt: job.attrs.lastRunAt,
                             nextRunAt: job.attrs.nextRunAt,
                             content: content
                         });
+
                         text += MD.nl();
                     });
                     session.dialogData.jobsIds = jobsIds;
@@ -328,7 +328,7 @@ bot.dialog('/command/abort', [
     },
     (session, args) => {
         if (!args.response) {
-            session.endDialog(cancelCommandTmpl());
+            session.endDialog(cancelCommandTmpl.render());
         } else {
             const jobsIds = session.dialogData.jobsIds;
             const jobsIndexes = args.response.split(",")
