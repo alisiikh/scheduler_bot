@@ -185,9 +185,10 @@ bot.dialog('/command/schedule', [
             session.userData.content = args.response;
 
             agenda.schedule(session.userData.interval, 'sendNotifications', {
+                jobId: uuid.v4(),
                 address: session.message.address,
                 content: session.userData.content,
-                jobId: uuid.v4()
+                username: BotUtil.getContactNameFromMessage(session.message)
             });
 
             session.endDialog(`Notification has been scheduled, I will send you back in '${session.userData.interval}'`);
@@ -232,9 +233,10 @@ bot.dialog('/command/repeat', [
             session.userData.content = args.response;
 
             var repeatNotificationsJob = agenda.create('repeatNotifications', {
+                jobId: uuid.v4(),
                 address: session.message.address,
                 content: session.userData.content,
-                jobId: uuid.v4()
+                username: BotUtil.getContactNameFromMessage(session.message)
             });
             repeatNotificationsJob.repeatEvery(session.userData.interval).save();
 

@@ -4,6 +4,11 @@ const MD = require('./util/mdutil');
 const bot = require('./bot').bot;
 const botBuilder = require('./bot').botBuilder;
 const config = require('./config');
+const swig = require('./swig');
+
+
+const singeNotificationTmpl = swig.compileFile('template/md/single_notification.md');
+const repeatableNotificationTmpl = swig.compileFile('template/md/repeatable_notification.md');
 
 const agenda = require('agenda')({
     db: {
@@ -17,12 +22,13 @@ agenda.define('sendNotifications', (job, done) => {
     const jobData = job.attrs.data;
     const content = MD.convertPlainTextToMarkdown(jobData.content);
     const address = jobData.address;
+    const username = jobData.username || address.user.name;
 
     console.log(`Job 'sendNotifications' is fired for ${address.user.name}!`);
 
     const message = new botBuilder.Message()
         .address(address)
-        .text(`${address.conversation.isGroup ? address.user.name + '\'s' : 'Your'} one-time reminder:${MD.nl()}${content}`);
+        .text(singeNotificationTmpl({ isGroup: address.conversation.isGroup, username: username, content: content }));
     bot.send(message);
 
     done();
@@ -32,12 +38,13 @@ agenda.define('repeatNotifications', (job, done) => {
     const jobData = job.attrs.data;
     const content = MD.convertPlainTextToMarkdown(jobData.content);
     const address = jobData.address;
+    const username = jobData.username || address.user.name;
 
     console.log(`Job 'repeatNotifications' is fired for ${address.user.name}!`);
 
     const message = new botBuilder.Message()
         .address(address)
-        .text(`${address.conversation.isGroup ? address.user.name + '\'s' : 'Your'} repeatable reminder:${MD.nl()}${content}`);
+        .text(repeatableNotificationTmpl({ isGroup: address.conversation.isGroup, username: username, content: content }));
     bot.send(message);
 
     done();
