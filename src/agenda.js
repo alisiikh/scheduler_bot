@@ -86,10 +86,7 @@ agenda.define('abortOneNotification', {priority: 'high'}, (job, done) => {
     const address = jobData.address;
     const jobId = jobData.jobId;
 
-    agenda.cancel({
-        $or: [{name: 'sendNotifications'}, {name: 'repeatNotifications'}],
-        'data.jobId': jobId
-    }, (err, numRemoved) => {
+    agenda.cancel({ 'data.jobId': jobId }, (err, numRemoved) => {
         const message = new botBuilder.Message().address(address);
 
         if (!err) {
@@ -123,6 +120,18 @@ agenda.define("cleanUpFinishedNotifications", {priority: 'high'}, (job, done) =>
 });
 
 agenda.on('ready', () => {
+    const createIndexCb = function(err, result) {
+        if (err) {
+            console.error("Failed to create index", err);
+        }
+    };
+    agenda._collection.createIndex({'data.jobId': 1}, {'name': 'abortOneNotificationIndex'}, createIndexCb);
+    agenda._collection.createIndex({'data.address.user.id': 1, 'name': 1}, {'name': 'abortNotificationsIndex'}, createIndexCb);
+    agenda._collection.createIndex({'name': 1, 'data.address.user.id': 1, 'data.jobId': 1},
+        {name: 'abortJobBotIndex'}, createIndexCb);
+    agenda._collection.createIndex({'name': 1, 'data.address.user.id': 1, 'data.address.conversation.id': 1,
+        'nextRunAt': 1}, {'name': 'fireNowIndex'}, createIndexCb);
+
     console.log("Agenda successfully started and ready to receive job requests.");
     agenda.start();
 
