@@ -23,7 +23,7 @@ agenda.define('sendNotifications', (job, done) => {
     const address = jobData.address;
     const username = jobData.username || address.user.name;
 
-    console.log(`Job 'sendNotifications' is fired for ${address.user.name}!`);
+    console.log(`Job 'sendNotifications' is fired for ${username}!`);
 
     const message = new botBuilder.Message()
         .address(address)
@@ -42,7 +42,7 @@ agenda.define('repeatNotifications', (job, done) => {
     const address = jobData.address;
     const username = jobData.username || address.user.name;
 
-    console.log(`Job 'repeatNotifications' is fired for ${address.user.name}!`);
+    console.log(`Job 'repeatNotifications' is fired for ${username}!`);
 
     const message = new botBuilder.Message()
         .address(address)

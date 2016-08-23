@@ -21,6 +21,7 @@ const BotUtil = require('./util/botutil');
 const agendaJobInfoTmpl = nunjucks.getTemplate('agenda_job_info.md');
 const startCommandPromptTmpl = nunjucks.getTemplate('start_command_prompt.md');
 const cancelCommandTmpl = nunjucks.getTemplate('cancel_command.md');
+const abortConfirmationTmpl = nunjucks.getTemplate('abortall_confirmation.md');
 
 bot.on('conversationUpdate', (message) => {
     // Check for group conversations
@@ -358,9 +359,20 @@ bot.dialog('/command/abort', [
 
 bot.dialog('/command/abortall', [
     (session) => {
-        agenda.schedule('now', 'abortNotifications', {
-            address: session.message.address,
-        });
-        session.endDialog();
+        botBuilder.Prompts.text(session, abortConfirmationTmpl.render());
+    },
+    (session, args) => {
+        const decision = args.response;
+
+        if (!decision || (decision !== 'yes' && decision !== 'no')) {
+            session.endDialog(cancelCommandTmpl.render());
+        } else if (decision === 'no') {
+            session.endDialog("Ok, you've changed your mind (whew)");
+        } else if (decision === 'yes') {
+            agenda.schedule('now', 'abortNotifications', {
+                address: session.message.address,
+            });
+            session.endDialog();
+        }
     }
 ]);
