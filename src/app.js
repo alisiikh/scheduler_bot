@@ -66,16 +66,22 @@ bot.on('contactRelationUpdate', (message) => {
             .text(`Hello ${name || 'there'}... Thanks for having me.${MD.nl()}Type in 'start' command to start`);
         bot.send(reply);
     } else {
-        // delete their data
+        const userId = message.user.id;
+
+        console.log("Removing user data for user { name: '" + message.user.name + "', id: '" + message.user.id + "' }");
+        Contact.find({userId: userId}).remove().exec();
     }
 });
 
 bot.on('typing', (message) => {
-    // User is typing
+    console.log("User { name: '" + message.user.name + "', id: '" + message.user.id + "' } is typing");
 });
 
 bot.on('deleteUserData', (message) => {
-    // User asked to delete their data
+    const userId = message.user.id;
+
+    console.log("Removing user data for user " + message.user.name + ", id: " + message.user.id);
+    Contact.find({userId: userId}).remove().exec();
 });
 
 bot.use(botBuilder.Middleware.dialogVersion({
