@@ -45,6 +45,12 @@ class BotUtil {
     static isBotCommand(response) {
         return COMMAND_NAME_REGEX.test(response);
     }
+
+    static isBotMentioned(message) {
+        return message.entities.length > 0 &&
+            message.entities
+                    .filter((entity) => entity.mentioned && entity.mentioned.id === message.address.bot.id).length > 0
+    }
 }
 
 module.exports = BotUtil;

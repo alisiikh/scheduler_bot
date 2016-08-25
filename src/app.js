@@ -84,8 +84,7 @@ bot.use(botBuilder.Middleware.dialogVersion({
     message: 'Oops, I forgot everything. What were we talking about?'
 }));
 
-// TODO: remove this middleware if Skype guys change group messages format
-bot.use(botBuilder.Middleware.convertSkypeGroupMessages());
+bot.use(botBuilder.Middleware.processGroupMessages());
 bot.use(botBuilder.Middleware.sendTyping());
 
 bot.endConversationAction('cancel', cancelCommandTmpl.render(), { matches: /(\/)?cancel$/i });
@@ -98,7 +97,7 @@ intents.onDefault([
         let message = session.message;
         let address = message.address;
 
-        if (address.channelId !== "skype" && address.conversation.isGroup) {
+        if (address.conversation.isGroup) {
             console.log(`Received the message in group: '${JSON.stringify(message, null, 3)}', doing nothing`);
             session.endDialog();
         } else {

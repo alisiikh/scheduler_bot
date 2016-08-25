@@ -1,4 +1,3 @@
 - Enable scheduling by exact date+time - Priority: MODERATE
 - i18n - Priority: MODERATE
-- Improve queries (add correct indexes, optimize queries) - Priority: HIGH
 - Bug: name is shown incorrectly in telegram if repeatable job sent in group - Priority: MODERATE
