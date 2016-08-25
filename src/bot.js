@@ -14,6 +14,8 @@ const bot = new botBuilder.UniversalBot(botConnector);
 botBuilder.Middleware.processGroupMessages = function () {
     return {
         botbuilder: function (session, next) {
+            console.log("processGroupMessages called");
+
             const message = session.message;
             const address = message.address;
 
@@ -21,6 +23,8 @@ botBuilder.Middleware.processGroupMessages = function () {
                 let content = message.text;
 
                 if (BotUtil.isBotMentioned(message)) {
+                    console.log("Bot is mentioned!");
+
                     if (address.channelId === "skype" || address.channelId === 'emulator') {
                         message.entities.filter((entity) => entity.mentioned && entity.mentioned.id === address.bot.id)
                             .forEach((entity) => {
@@ -52,21 +56,6 @@ botBuilder.Middleware.processGroupMessages = function () {
             }
         }
     }
-};
-
-botBuilder.Middleware.ignoreNotDirectGroupMessages = function () {
-    return {
-        botbuilder: function (session, next) {
-            let message = session.message;
-            let address = message.address;
-
-            if (address.conversation.isGroup) {
-                session.endDialog();
-            } else {
-                next();
-            }
-        }
-    };
 };
 
 module.exports = {

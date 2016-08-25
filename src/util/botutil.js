@@ -47,9 +47,12 @@ class BotUtil {
     }
 
     static isBotMentioned(message) {
-        return message.entities.length > 0 &&
-            message.entities
-                    .filter((entity) => entity.mentioned && entity.mentioned.id === message.address.bot.id).length > 0
+        if (message.entities.length > 0) {
+            return message.entities
+                    .filter((entity) => entity.mentioned && entity.mentioned.id === message.address.bot.id).length > 0;
+        }
+
+        return false;
     }
 }
 
