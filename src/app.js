@@ -332,7 +332,7 @@ bot.dialog('/command/update', [
         if (!args.response) {
             session.endDialog("You cancelled.");
         } else {
-            const jobIndex = args.response;
+            const jobIndex = parseInt(args.response) - 1;
             const jobsIds = session.dialogData.jobsIds;
 
             if (isNaN(jobIndex) || jobIndex < 0 || jobIndex > jobsIds.length) {
