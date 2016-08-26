@@ -293,6 +293,7 @@ bot.dialog('/command/update', [
 
         agenda.jobs({
             'name': 'repeatNotifications',
+            'data.address.conversation.id': address.conversation.id,
             'data.address.user.id': address.user.id
         }, (err, jobs) => {
             if (err) {
@@ -352,7 +353,7 @@ bot.dialog('/command/update', [
             const content = args.response;
 
             agenda.jobs({
-                jobId: jobsIds[jobIndex]
+                'data.jobId': jobsIds[jobIndex]
             }, (err, jobs) => {
                 if (err) {
                     session.endDialog("Failed to find a notification");
