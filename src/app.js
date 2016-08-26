@@ -263,12 +263,12 @@ bot.dialog('/command/firenow', [
             'nextRunAt': {$ne: null}
         }, (err, jobs) => {
             if (err) {
-                session.endDialog("Unexpected error, failed to run jobs. Please try again.");
+                session.endDialog("Unexpected error, failed to run notifications. Please try again.");
             } else {
                 if (jobs.length > 0) {
                     const message = new botBuilder.Message()
                         .address(address)
-                        .text(`Firing ${jobs.length} jobs scheduled for current conversation`);
+                        .text(`Firing ${jobs.length} notifications scheduled for current conversation`);
                     bot.send(message, (err) => {
                         if (!err) {
                             jobs.forEach((job) => {
@@ -287,6 +287,92 @@ bot.dialog('/command/firenow', [
     }
 ]);
 
+bot.dialog('/command/update', [
+    (session, args, next) => {
+        const address = session.message.address;
+
+        agenda.jobs({
+            'name': 'repeatNotifications',
+            'data.address.user.id': address.user.id
+        }, (err, jobs) => {
+            if (err) {
+                session.endDialog("Failed to query your running notifications, please try next time.");
+            } else {
+                if (jobs.length > 0) {
+                    let text = `Please send me back a number of the notification you want to update:${MD.nl()}`;
+                    const jobsIds = [];
+
+                    jobs.forEach((job, idx) => {
+                        const content = job.attrs.data.content;
+                        const jobId = job.attrs.data.jobId;
+
+                        jobsIds.push(jobId);
+
+                        text += agendaJobInfoTmpl.render({
+                            idx: ++idx,
+                            jobName: job.attrs.name,
+                            lastRunAt: job.attrs.lastRunAt,
+                            nextRunAt: job.attrs.nextRunAt,
+                            content: content
+                        });
+
+                        text += MD.nl();
+                    });
+                    session.dialogData.jobsIds = jobsIds;
+
+                    botBuilder.Prompts.text(session, text);
+                } else {
+                    session.endDialog("You have no repeatable notifications running in this conversation");
+                }
+            }
+        })
+    },
+    (session, args, next) => {
+        if (!args.response) {
+            session.endDialog("You cancelled.");
+        } else {
+            const jobIndex = args.response;
+            const jobsIds = session.dialogData.jobsIds;
+
+            if (isNaN(jobIndex) || jobIndex < 0 || jobIndex > jobsIds.length) {
+                session.endDialog("Notification index you provided is incorrect");
+            } else {
+                session.dialogData.jobIndex = jobIndex;
+
+                botBuilder.Prompts.text(session, "Now please enter new content for this notification");
+            }
+        }
+    },
+    (session, args, next) => {
+        if (!args.response) {
+            session.endDialog("You cancelled.");
+        } else {
+            const jobsIds = session.dialogData.jobsIds;
+            const jobIndex = session.dialogData.jobIndex;
+            const content = args.response;
+
+            agenda.jobs({
+                jobId: jobsIds[jobIndex]
+            }, (err, jobs) => {
+                if (err) {
+                    session.endDialog("Failed to find a notification");
+                } else {
+                    jobs.forEach((job) => {
+                        job.attrs.data.content = content;
+                        job.save((err) => {
+                            if (!err) {
+                                session.endDialog("Notification has been successfully updated");
+                            } else {
+                                session.endDialog("Failed to update notification, please try again later");
+                            }
+                        });
+                    });
+                }
+            });
+        }
+    }
+]);
+
 bot.dialog('/command/abort', [
     (session, args, next) => {
         const address = session.message.address;
@@ -296,10 +382,10 @@ bot.dialog('/command/abort', [
             'data.jobId': {$exists: true}
         }, (err, jobs) => {
             if (err) {
-                session.endDialog("Failed to query your running jobs, please try next time.");
+                session.endDialog("Failed to query your running notifications, please try next time.");
             } else {
                 if (jobs.length > 0) {
-                    let text = `Please send me back a number (or comma separated numbers) of the job(s) you want to stop:${MD.nl()}`;
+                    let text = `Please send me back a number (or comma separated numbers) of the notification(s) you want to stop:${MD.nl()}`;
                     const jobsIds = [];
 
                     jobs.forEach((job, idx) => {
@@ -324,7 +410,7 @@ bot.dialog('/command/abort', [
                 } else {
                     const message = new botBuilder.Message()
                         .address(address)
-                        .text("You have no running jobs");
+                        .text("You have no running notifications");
                     bot.send(message);
 
                     session.endDialog();

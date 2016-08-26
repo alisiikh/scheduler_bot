@@ -1,6 +1,7 @@
 Choose a command from:
 'schedule' - schedule a delayed one-time notification
 'repeat' - schedule a repeatable notification
-'firenow' - fire all of your jobs in current chat now
-'abort' - abort a single running job
-'abortall' - abort all of your currently running jobs
+'firenow' - fire all of your notifications run in current conversation
+'abort' - abort a single running notification
+'abortall' - abort all of your currently running notifications
+'update' - update repeatable notification

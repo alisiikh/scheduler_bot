@@ -2,3 +2,4 @@
 - i18n - Priority: MODERATE
 - Bug: name is shown incorrectly in telegram if repeatable job sent in group - Priority: MODERATE
 - Telegram group issues (message is not resolved correctly, goes to onDefault of intent dialog) - Priority: LOW
+- Create "update" command to update repeatable jobs

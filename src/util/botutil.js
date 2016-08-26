@@ -3,7 +3,7 @@ const Contact = require('./../model').Contact;
 class BotUtil {
 
     static get COMMAND_NAME_REGEX() {
-        return  /[\/]?(schedule|repeat|abort|abortall|firenow)$/i;
+        return  /[\/]?(schedule|repeat|abort|abortall|firenow|update)$/i;
     }
 
     static createContactFromMessage(message) {
