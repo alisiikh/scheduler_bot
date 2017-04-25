@@ -1,6 +1,6 @@
 {
   "name": "scheduler-bot",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Scheduler BOT built on top of Bot Framework",
   "main": "app.js",
   "scripts": {
@@ -15,17 +15,20 @@
   "author": "Aleksey Lisiikh",
   "license": "MIT",
   "dependencies": {
-    "agenda": "^0.8.1",
-    "botbuilder": "^3.2.3",
-    "chai": "^3.5.0",
-    "cron-parser": "^2.1.0",
+    "agenda": "^0.9.1",
+    "botbuilder": "^3.7.0",
+    "mongodb": "^2.2.26",
+    "mongoose": "^4.9.6",
+
     "human-interval": "^0.1.6",
-    "mocha": "^2.5.3",
     "moment": "^2.14.1",
-    "mongodb": "^2.2.5",
-    "mongoose": "^4.5.8",
+
+    "cron-parser": "^2.1.0",
     "node-uuid": "^1.4.7",
     "nunjucks": "^2.4.2",
-    "restify": "^4.1.1"
+    "restify": "^4.1.1",
+
+    "mocha": "^2.5.3",
+    "chai": "^3.5.0"
   }
 }
