@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha --reporter spec",
-    "start": "node --debug index.js"
+    "start": "node --inspect index.js"
   },
   "keywords": [
     "scheduler",
