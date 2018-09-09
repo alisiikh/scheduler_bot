@@ -100,8 +100,8 @@ agenda.define('abortOneReminder', {priority: 'high'}, (job, done) => {
     done();
 });
 
-agenda.define("cleanUpFinishedReminders", {priority: 'high'}, (job, done) => {
-    console.log(`Job cleanUpFinishedReminders has been started`);
+agenda.define("cleanUpStaleReminders", {priority: 'high'}, (job, done) => {
+    console.log(`Job cleanUpStaleReminders has been started`);
 
     agenda.cancel({
         'nextRunAt': {$eq: null}
@@ -119,23 +119,24 @@ agenda.define("cleanUpFinishedReminders", {priority: 'high'}, (job, done) => {
 });
 
 agenda.on('ready', () => {
-    const createIndexCb = function(err, result) {
+    const handleIndexError = (err) => {
         if (err) {
             console.error("Failed to create index", err);
         }
     };
-    agenda._collection.createIndex({'data.jobId': 1}, {'name': 'abortOneReminderIndex'}, createIndexCb);
-    agenda._collection.createIndex({'data.address.user.id': 1, 'name': 1}, {'name': 'abortRemindersIndex'}, createIndexCb);
+
+    agenda._collection.createIndex({'data.jobId': 1}, {'name': 'jobId_idx'}, handleIndexError);
+    agenda._collection.createIndex({'data.address.user.id': 1, 'name': 1}, {'name': 'userId_name_idx'}, handleIndexError);
     agenda._collection.createIndex({'name': 1, 'data.address.user.id': 1, 'data.jobId': 1},
-        {name: 'abortJobBotIndex'}, createIndexCb);
+        {name: 'name_userId_jobId_idx'}, handleIndexError);
     agenda._collection.createIndex({'name': 1, 'data.address.user.id': 1, 'data.address.conversation.id': 1,
-        'nextRunAt': 1}, {'name': 'fireNowIndex'}, createIndexCb);
+        'nextRunAt': 1}, {'name': 'name_userId_conversationId_nextRunAt_idx'}, handleIndexError);
 
     console.log("Agenda successfully started and ready to receive job requests.");
     agenda.start();
 
     console.log(`Starting jobs cleanup job with interval of ${config.agenda.cleanUpInterval}`);
-    agenda.every(config.agenda.cleanUpInterval, 'cleanUpFinishedReminders');
+    agenda.every(config.agenda.cleanUpInterval, 'cleanUpStaleReminders');
 });
 
 module.exports = agenda;

@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const appCfg = require('./config');
 
-mongoose.connect(appCfg.mongo.databaseURL);
+mongoose.connect(appCfg.mongo.databaseURL, { useNewUrlParser: true });
 
 const Contact = mongoose.model('Contact',
 	new Schema({

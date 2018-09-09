@@ -18,11 +18,11 @@ import botUtil from './botutil';
 
 const intents = new botBuilder.IntentDialog({ intentThreshold: 0.01 });
 
-const agendaJobInfoTmpl = nunjucks.getTemplate('job-info.md');
-const startCommandPromptTmpl = nunjucks.getTemplate('start-prompt.md');
-const cancelCommandTmpl = nunjucks.getTemplate('cancel-command.md');
+const jobInfoTmpl = nunjucks.getTemplate('job-info.md');
+const starterTmpl = nunjucks.getTemplate('start-prompt.md');
+const canceledTmpl = nunjucks.getTemplate('cancel-command.md');
 const scheduledTmpl = nunjucks.getTemplate('scheduled.md');
-const abortConfirmationTmpl = nunjucks.getTemplate('abortall-confirmation.md');
+const abortAllTmpl = nunjucks.getTemplate('abortall-confirmation.md');
 
 server.listen(serverConfig.port, serverConfig.address, () => {
     console.log('%s is listening for incoming requests on port %s', server.name, server.url);
@@ -98,76 +98,31 @@ bot.use(botBuilder.Middleware.dialogVersion({
 // bot.use(botBuilder.Middleware.processGroupMessages());
 bot.use(botBuilder.Middleware.sendTyping());
 
-bot.endConversationAction('cancel', cancelCommandTmpl.render(), { matches: /(\/)?cancel$/i });
+bot.endConversationAction('cancel', canceledTmpl.render(), { matches: /(\/)?cancel$/i });
 // bot.beginDialogAction('help', '/help', { matches: /^help/i });
 
-bot.dialog('/', intents);
-
-intents.onDefault([
-    (session) => {
-        let message = session.message;
-        let address = message.address;
-
-        if (address.conversation.isGroup) {
-            console.log(`Received the message in group: '${JSON.stringify(message, null, 3)}', doing nothing`);
-            session.endDialog();
-        } else {
-            console.log(`Received the message: '${JSON.stringify(message, null, 3)}', sending a hint`);
-            session.endDialog(`To start, please type in 'start' command.\nType 'cancel' anytime to discard conversation to start from scratch.`);
-        }
-    }
+bot.dialog('/', [
+    (session) => session.beginDialog('/start')
 ]);
 
-intents.matches(/start$/i, [
+bot.dialog('/start', [
     (session, args, next) => {
-        if (session.userData.contact) {
-            next();
-            return;
+        if (session.message && botUtil.parseCommand(session.message.text)) {
+            next({ response: session.message.text });
+        } else {
+            session.beginDialog('/command', { prompt: starterTmpl.render() });
         }
-
-        const message = session.message;
-        const userId = message.user.id;
-
-        Contact.findOne({userId: userId})
-            .exec((err, contact) => {
-                if (!contact) {
-                    const contact = botUtil.createContactFromMessage(message);
-                    contact.save()
-                        .then((contact) => {
-                            session.userData.contact = contact;
-                            next();
-                        });
-                } else {
-                    session.userData.contact = contact;
-                    next();
-                }
-            });
-    },
-    (session) => {
-        const tmpl = startCommandPromptTmpl.render();
-        const prompt = tmpl;
-        const retryPrompt = `Sorry, I don't understand you, please try again!\n${tmpl}`;
-
-        session.beginDialog('/command', {
-            prompt: prompt,
-            retryPrompt: retryPrompt,
-            maxRetries: 3
-        });
     },
     (session, args) => {
         if (!args.response) {
-            session.endDialog(cancelCommandTmpl.render());
+            session.endDialog(canceledTmpl.render());
         } else {
-            const command = botUtil.parseCommandName(args.response);
-            session.userData.command = command;
-
-            session.beginDialog(`/command/${command}`);
+            session.beginDialog(`/command/${args.response}`);
         }
     }
 ]);
 
-bot.dialog('/command', botBuilder.DialogAction.validatedPrompt(
-    botBuilder.PromptType.text, (response) => botUtil.isBotCommand(response)));
+bot.dialog('/command', botBuilder.DialogAction.validatedPrompt(botBuilder.PromptType.text, botUtil.isCommand));
 
 bot.dialog('/command/schedule', [
     (session) => {
@@ -177,14 +132,13 @@ bot.dialog('/command/schedule', [
         if (args && args.response) {
             const interval = args.response.toLowerCase();
             if (isNaN(hinterval(interval))) {
-                session.endDialog("You've entered an incorrect interval");
+                session.endDialog("An interval you've entered is incorrect.");
             } else {
                 session.userData.interval = interval;
-
                 next();
             }
         } else {
-            session.endDialog(cancelCommandTmpl.render());
+            session.endDialog(canceledTmpl.render());
         }
     },
     (session) => {
@@ -203,7 +157,7 @@ bot.dialog('/command/schedule', [
 
             session.endDialog(scheduledTmpl.render({interval: session.userData.interval}));
         } else {
-            session.endDialog(cancelCommandTmpl.render());
+            session.endDialog(canceledTmpl.render());
         }
     }
 ]);
@@ -228,11 +182,10 @@ bot.dialog('/command/repeat', [
                 session.endDialog("Incorrect interval. Operation cancelled.");
             } else {
                 session.userData.interval = args.response;
-
                 next();
             }
         } else {
-            session.endDialog(cancelCommandTmpl.render());
+            session.endDialog(canceledTmpl.render());
         }
     },
     (session) => {
@@ -242,7 +195,7 @@ bot.dialog('/command/repeat', [
         if (args && args.response) {
             session.userData.content = args.response;
 
-            var repeatRemindersJob = agenda.create('repeatReminders', {
+            const repeatRemindersJob = agenda.create('repeatReminders', {
                 jobId: uuid.v4(),
                 address: session.message.address,
                 content: session.userData.content,
@@ -252,12 +205,12 @@ bot.dialog('/command/repeat', [
 
             session.endDialog(scheduledTmpl.render({interval: session.userData.interval}));
         } else {
-            session.endDialog(cancelCommandTmpl.render());
+            session.endDialog(canceledTmpl.render());
         }
     }
 ]);
 
-bot.dialog('/command/firenow', [
+bot.dialog('/command/fire', [
     (session) => {
         const address = session.message.address;
 
@@ -293,13 +246,13 @@ bot.dialog('/command/firenow', [
 ]);
 
 bot.dialog('/command/update', [
-    (session, args, next) => {
+    (session) => {
         const address = session.message.address;
 
         agenda.jobs({
             'name': 'repeatReminders',
-            'data.address.conversation.id': address.conversation.id,
-            'data.address.user.id': address.user.id
+            'data.address.user.id': address.user.id,
+            'data.address.conversation.id': address.conversation.id
         }, (err, jobs) => {
             if (err) {
                 session.endDialog("Failed to query your running Reminders, please try next time.");
@@ -314,7 +267,7 @@ bot.dialog('/command/update', [
 
                         jobsIds.push(jobId);
 
-                        text += agendaJobInfoTmpl.render({
+                        text += jobInfoTmpl.render({
                             idx: ++idx,
                             jobName: job.attrs.name,
                             lastRunAt: job.attrs.lastRunAt,
@@ -333,7 +286,7 @@ bot.dialog('/command/update', [
             }
         })
     },
-    (session, args, next) => {
+    (session, args) => {
         if (!args.response) {
             session.endDialog("You cancelled.");
         } else {
@@ -349,7 +302,7 @@ bot.dialog('/command/update', [
             }
         }
     },
-    (session, args, next) => {
+    (session, args) => {
         if (!args.response) {
             session.endDialog("You cancelled.");
         } else {
@@ -380,7 +333,7 @@ bot.dialog('/command/update', [
 ]);
 
 bot.dialog('/command/abort', [
-    (session, args, next) => {
+    (session) => {
         const address = session.message.address;
         agenda.jobs({
             $or: [{name: 'sendReminders'}, {name: 'repeatReminders'}],
@@ -400,7 +353,7 @@ bot.dialog('/command/abort', [
 
                         jobsIds.push(jobId);
 
-                        text += agendaJobInfoTmpl.render({
+                        text += jobInfoTmpl.render({
                             idx: ++idx,
                             jobName: job.attrs.name,
                             lastRunAt: job.attrs.lastRunAt,
@@ -426,14 +379,14 @@ bot.dialog('/command/abort', [
     },
     (session, args) => {
         if (!args.response) {
-            session.endDialog(cancelCommandTmpl.render());
+            session.endDialog(canceledTmpl.render());
         } else {
             const jobsIds = session.dialogData.jobsIds;
             const jobsIndexes = args.response.split(",")
                 .map((jobIndex) => parseInt(jobIndex) - 1);
 
 
-            var hasErrors = false;
+            let hasErrors = false;
             jobsIndexes.forEach((jobIndex) => {
                 if (isNaN(jobIndex) || jobIndex < 0 || jobIndex > jobsIds.length) {
                     hasErrors = true;
@@ -445,24 +398,21 @@ bot.dialog('/command/abort', [
                 }
             });
 
-            if (hasErrors) {
-                session.endDialog("Finished abort command with errors");
-            } else {
-                session.endDialog();
-            }
+            session.endDialog(hasErrors ? "Finished abort command with errors" : "");
         }
     }
 ]);
 
 bot.dialog('/command/abortall', [
     (session) => {
-        botBuilder.Prompts.text(session, abortConfirmationTmpl.render());
+        botBuilder.Prompts.text(session, abortAllTmpl.render());
     },
     (session, args) => {
         const decision = args.response;
 
+        // TODO: [y/n], [yes/no]
         if (!decision || (decision !== 'yes' && decision !== 'no')) {
-            session.endDialog(cancelCommandTmpl.render());
+            session.endDialog(canceledTmpl.render());
         } else if (decision === 'no') {
             session.endDialog("Ok, you've changed your mind (whew)");
         } else if (decision === 'yes') {

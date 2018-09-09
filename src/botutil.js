@@ -1,24 +1,24 @@
-const Contact = require('./model').Contact;
+// const Contact = require('./model').Contact;
 
 class BotUtil {
 
-    static get CommandNameRegex() {
+    static get CommandRegex() {
         return /[\/]?(schedule|repeat|abort|abortall|firenow|update)$/i;
     }
 
-    static createContactFromMessage(message) {
-        const user = message.user;
-        const userId = user.id;
-        const name = BotUtil.getContactNameFromMessage(message);
-        const channelId = message.address.channelId;
-
-        return new Contact({
-            userId: userId,
-            name: name,
-            channel: channelId,
-            dateCreated: new Date(),
-        });
-    }
+    // static createContactFromMessage(message) {
+    //     const user = message.user;
+    //     const userId = user.id;
+    //     const name = BotUtil.getContactNameFromMessage(message);
+    //     const channelId = message.address.channelId;
+    //
+    //     return new Contact({
+    //         userId: userId,
+    //         name: name,
+    //         channel: channelId,
+    //         dateCreated: new Date(),
+    //     });
+    // }
 
     static getContactNameFromMessage(message) {
         if (message.user.hasOwnProperty('name')) {
@@ -33,9 +33,9 @@ class BotUtil {
         }
     }
 
-    static parseCommandName(response) {
-        if (BotUtil.isBotCommand(response)) {
-            const matcher = BotUtil.CommandNameRegex.exec(response);
+    static parseCommand(response) {
+        if (BotUtil.isCommand(response)) {
+            const matcher = BotUtil.CommandRegex.exec(response);
             if (matcher.length > 0) {
                 return matcher[1];
             } else {
@@ -46,18 +46,18 @@ class BotUtil {
         }
     }
 
-    static isBotCommand(response) {
-        return BotUtil.CommandNameRegex.test(response);
+    static isCommand(response) {
+        return BotUtil.CommandRegex.test(response);
     }
 
-    static isBotMentioned(message) {
-        if (message.entities.length > 0) {
-            return message.entities
-                    .filter((entity) => entity.mentioned && entity.mentioned.id === message.address.bot.id).length > 0;
-        }
-
-        return false;
-    }
+    // static isBotMentioned(message) {
+    //     if (message.entities.length > 0) {
+    //         return message.entities
+    //                 .filter((entity) => entity.mentioned && entity.mentioned.id === message.address.bot.id).length > 0;
+    //     }
+    //
+    //     return false;
+    // }
 }
 
 module.exports = BotUtil;
