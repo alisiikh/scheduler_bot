@@ -2,8 +2,8 @@
 
 import * as botBuilder from 'botbuilder';
 import { bot as botConfig } from './config';
-
-// const BotUtil = require('./botutil');
+// import { Contact, UserData } from './model';
+// import botUtil from "./botutil";
 
 const connector = new botBuilder.ChatConnector({
     appId: botConfig.botAppId,
@@ -12,7 +12,7 @@ const connector = new botBuilder.ChatConnector({
 
 const bot = new botBuilder.UniversalBot(connector);
 
-class MongoBotStorage {
+class BotDataStorage {
     constructor() {
         this.userStore = {};
         this.conversationStore = {};
@@ -69,15 +69,36 @@ class MongoBotStorage {
     }
 
     saveData(context, data, callback) {
-
-        console.log(data);
+        // console.log(data);
 
         if (context.userId) {
             if (context.persistUserData) {
+                // save contact
+                // console.log(`Saving contact for user id: ${context.userId}`);
+                //
+                // Contact.findOne({userId: context.userId}).exec((err, contact) => {
+                //     if (!contact) {
+                //         new Contact(data.contact).save((err) => {
+                //             if (err) {
+                //                 console.log(`Failed to save contact, reason: ${err}`);
+                //             } else {
+                //                 const userData = new UserData({contact: contact._id});
+                //                 userData.save((err) => {
+                //                     if (err) {
+                //                         console.log(`Failed to save user data, reason: ${err}`);
+                //                         this.userStore[context.userId] = {};
+                //                     } else {
+                //                         this.userStore[context.userId] = JSON.stringify(userData);
+                //                     }
+                //                 });
+                //             }
+                //         });
+                //     }
+                // });
                 this.userStore[context.userId] = JSON.stringify(data.userData || {});
             }
             if (context.conversationId) {
-                var key = context.userId + ':' + context.conversationId;
+                const key = context.userId + ':' + context.conversationId;
                 this.conversationStore[key] = JSON.stringify(data.privateConversationData || {});
             }
         }
@@ -88,8 +109,7 @@ class MongoBotStorage {
     }
 }
 
-const botStorage = new MongoBotStorage();
-bot.set('storage', botStorage);
+bot.set('storage', new BotDataStorage());
 
 // botBuilder.Middleware.processGroupMessages = function () {
 //     return {
@@ -137,5 +157,5 @@ bot.set('storage', botStorage);
 module.exports = {
     bot,
     botBuilder,
-    connector: connector
+    connector
 };

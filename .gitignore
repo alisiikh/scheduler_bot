@@ -2,3 +2,5 @@ node_modules/
 dist/
 .eslintrc
 .idea
+*.iml
+package-lock.json
