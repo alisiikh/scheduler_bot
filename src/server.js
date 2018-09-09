@@ -1,45 +1,30 @@
 'use strict';
 
-const restify = require('restify');
-const bot = require('./bot').bot;
-const botConnector = require('./bot').botConnector;
-const serverCfg = require('./config').server;
-const nunjucks = require('./nunjucks').htmlTmplEngine;
-
-const privacyHtmlTmpl = nunjucks.getTemplate('privacy.html');
-const termsHtmlTmpl = nunjucks.getTemplate('terms.html');
+import * as restify from 'restify';
+import { connector } from './bot'
 
 const server = restify.createServer({
-    name: 'botServer'
+    name: 'server'
 });
 
 server.use(restify.acceptParser(server.acceptable));
 server.use(restify.bodyParser({mapParams: true}));
 
-server.post('/api/v3/chat', botConnector.listen());
+server.post('/api/v1/chat', function (req, res) {
+    return connector.listen()(req, res);
+});
 
-server.get('/bot/terms', (req, res) => {
-    const body = termsHtmlTmpl.render();
+const emptyRoute = function(req, res) {
+    const msg = "Under construction...";
     res.writeHead(200, {
-            'Content-Length': Buffer.byteLength(body),
-            'Content-Type': 'text/html'
-        });
-    res.write(body);
+        'Content-Length': msg.length,
+        'Content-Type': 'text/html'
+    });
+    res.write(msg);
     res.end();
-});
+};
 
-server.get('/bot/privacy', (req, res) => {
-    const body = privacyHtmlTmpl.render();
-    res.writeHead(200, {
-            'Content-Length': Buffer.byteLength(body),
-            'Content-Type': 'text/html'
-        });
-    res.write(body);
-    res.end();
-});
-
-server.listen(serverCfg.port, serverCfg.ipAddress, () => {
-    console.log('%s is listening for incoming requests on port %s', server.name, server.url);
-});
+server.get('/bot/terms', emptyRoute);
+server.get('/bot/privacy', emptyRoute);
 
 module.exports = server;

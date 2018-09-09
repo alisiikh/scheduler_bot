@@ -1,27 +1,32 @@
 'use strict';
 
-// load system first
-require('./system');
+// process.env.TZ = 'Europe/Kyiv';
 
-const MD = require('./util/mdutil');
-const nunjucks = require('./nunjucks').mdTmplEngine;
-const humanInterval = require('human-interval');
-const cronParser = require('cron-parser');
-const uuid = require('node-uuid');
-const botCfg = require('./config').bot;
+import server from './server';
+import nunjucks from './nunjucks';
+import hinterval from 'human-interval';
+import cronParser from 'cron-parser';
+import uuid from 'node-uuid';
+import { bot as botConfig, server as serverConfig } from './config';
 
-const Contact = require('./model').Contact;
+import { Contact } from './model';
 
-const agenda = require('./agenda');
-const bot = require('./bot').bot;
-const botBuilder = require('./bot').botBuilder;
+import agenda from './agenda';
+import { bot, botBuilder } from './bot';
+
+import botUtil from './botutil';
+
 const intents = new botBuilder.IntentDialog({ intentThreshold: 0.01 });
-const BotUtil = require('./util/botutil');
 
-const agendaJobInfoTmpl = nunjucks.getTemplate('agenda_job_info.md');
-const startCommandPromptTmpl = nunjucks.getTemplate('start_command_prompt.md');
-const cancelCommandTmpl = nunjucks.getTemplate('cancel_command.md');
-const abortConfirmationTmpl = nunjucks.getTemplate('abortall_confirmation.md');
+const agendaJobInfoTmpl = nunjucks.getTemplate('job-info.md');
+const startCommandPromptTmpl = nunjucks.getTemplate('start-prompt.md');
+const cancelCommandTmpl = nunjucks.getTemplate('cancel-command.md');
+const scheduledTmpl = nunjucks.getTemplate('scheduled.md');
+const abortConfirmationTmpl = nunjucks.getTemplate('abortall-confirmation.md');
+
+server.listen(serverConfig.port, serverConfig.address, () => {
+    console.log('%s is listening for incoming requests on port %s', server.name, server.url);
+});
 
 bot.on('conversationUpdate', (message) => {
     // Check for group conversations
@@ -63,7 +68,7 @@ bot.on('contactRelationUpdate', (message) => {
         const name = message.user ? message.user.name : null;
         const reply = new botBuilder.Message()
             .address(message.address)
-            .text(`Hello ${name || 'there'}... Thanks for having me.${MD.nl()}Type in 'start' command to start`);
+            .text(`Hello ${name || 'there'}... Thanks for having me.\nType in 'start' command to start`);
         bot.send(reply);
     } else {
         const userId = message.user.id;
@@ -85,12 +90,12 @@ bot.on('deleteUserData', (message) => {
 });
 
 bot.use(botBuilder.Middleware.dialogVersion({
-    version: botCfg.dialogVersion,
+    version: botConfig.dialogVersion,
     resetCommand: /(\/)?reset$/i,
-    message: 'Oops, I forgot everything. What were we talking about?'
+    message: 'I forgot all.'
 }));
 
-bot.use(botBuilder.Middleware.processGroupMessages());
+// bot.use(botBuilder.Middleware.processGroupMessages());
 bot.use(botBuilder.Middleware.sendTyping());
 
 bot.endConversationAction('cancel', cancelCommandTmpl.render(), { matches: /(\/)?cancel$/i });
@@ -108,12 +113,12 @@ intents.onDefault([
             session.endDialog();
         } else {
             console.log(`Received the message: '${JSON.stringify(message, null, 3)}', sending a hint`);
-            session.endDialog(`To start, please type in 'start' command.${MD.nl()}Type 'cancel' anytime to discard conversation to start from scratch.`);
+            session.endDialog(`To start, please type in 'start' command.\nType 'cancel' anytime to discard conversation to start from scratch.`);
         }
     }
 ]);
 
-intents.matches(/(\/)?start$/i, [
+intents.matches(/start$/i, [
     (session, args, next) => {
         if (session.userData.contact) {
             next();
@@ -126,7 +131,7 @@ intents.matches(/(\/)?start$/i, [
         Contact.findOne({userId: userId})
             .exec((err, contact) => {
                 if (!contact) {
-                    const contact = BotUtil.createContactFromMessage(message);
+                    const contact = botUtil.createContactFromMessage(message);
                     contact.save()
                         .then((contact) => {
                             session.userData.contact = contact;
@@ -139,9 +144,9 @@ intents.matches(/(\/)?start$/i, [
             });
     },
     (session) => {
-        const tmpl = MD.convertPlainTextToMarkdown(startCommandPromptTmpl.render());
+        const tmpl = startCommandPromptTmpl.render();
         const prompt = tmpl;
-        const retryPrompt = `Sorry, I don't understand you, please try again!${MD.nl()}${tmpl}`;
+        const retryPrompt = `Sorry, I don't understand you, please try again!\n${tmpl}`;
 
         session.beginDialog('/command', {
             prompt: prompt,
@@ -153,7 +158,7 @@ intents.matches(/(\/)?start$/i, [
         if (!args.response) {
             session.endDialog(cancelCommandTmpl.render());
         } else {
-            const command = BotUtil.parseCommandName(args.response);
+            const command = botUtil.parseCommandName(args.response);
             session.userData.command = command;
 
             session.beginDialog(`/command/${command}`);
@@ -162,16 +167,16 @@ intents.matches(/(\/)?start$/i, [
 ]);
 
 bot.dialog('/command', botBuilder.DialogAction.validatedPrompt(
-    botBuilder.PromptType.text, (response) => BotUtil.isBotCommand(response)));
+    botBuilder.PromptType.text, (response) => botUtil.isBotCommand(response)));
 
 bot.dialog('/command/schedule', [
     (session) => {
-        botBuilder.Prompts.text(session, `Type in some time interval,${MD.nl()}e.g. 5 minutes, 10 seconds, 8 hours, etc.`);
+        botBuilder.Prompts.text(session, `Type in some time interval,\ne.g. 5 minutes, 10 seconds, 8 hours, etc.`);
     },
     (session, args, next) => {
         if (args && args.response) {
             const interval = args.response.toLowerCase();
-            if (isNaN(humanInterval(interval))) {
+            if (isNaN(hinterval(interval))) {
                 session.endDialog("You've entered an incorrect interval");
             } else {
                 session.userData.interval = interval;
@@ -189,14 +194,14 @@ bot.dialog('/command/schedule', [
         if (args && args.response) {
             session.userData.content = args.response;
 
-            agenda.schedule(session.userData.interval, 'sendNotifications', {
+            agenda.schedule(session.userData.interval, 'sendReminders', {
                 jobId: uuid.v4(),
                 address: session.message.address,
                 content: session.userData.content,
-                username: BotUtil.getContactNameFromMessage(session.message)
+                username: botUtil.getContactNameFromMessage(session.message)
             });
 
-            session.endDialog(`Notification has been scheduled, I will send you back in '${session.userData.interval}'`);
+            session.endDialog(scheduledTmpl.render({interval: session.userData.interval}));
         } else {
             session.endDialog(cancelCommandTmpl.render());
         }
@@ -205,11 +210,11 @@ bot.dialog('/command/schedule', [
 
 bot.dialog('/command/repeat', [
     (session) => {
-        botBuilder.Prompts.text(session, `Type in some time interval,${MD.nl()}e.g. 5 minutes, 10 seconds, 8 hours, etc.`);
+        botBuilder.Prompts.text(session, `Type in some time interval,\ne.g. 5 minutes, 10 seconds, 8 hours, etc.`);
     },
     (session, args, next) => {
         if (args && args.response) {
-            let intervalCorrect = !isNaN(humanInterval(args.response));
+            let intervalCorrect = !isNaN(hinterval(args.response));
             if (!intervalCorrect) {
                 try {
                     cronParser.parseExpression(args.response);
@@ -237,15 +242,15 @@ bot.dialog('/command/repeat', [
         if (args && args.response) {
             session.userData.content = args.response;
 
-            var repeatNotificationsJob = agenda.create('repeatNotifications', {
+            var repeatRemindersJob = agenda.create('repeatReminders', {
                 jobId: uuid.v4(),
                 address: session.message.address,
                 content: session.userData.content,
-                username: BotUtil.getContactNameFromMessage(session.message)
+                username: botUtil.getContactNameFromMessage(session.message)
             });
-            repeatNotificationsJob.repeatEvery(session.userData.interval).save();
+            repeatRemindersJob.repeatEvery(session.userData.interval).save();
 
-            session.endDialog(`Notification has been scheduled for repeating, I will send you back every '${session.userData.interval}'`);
+            session.endDialog(scheduledTmpl.render({interval: session.userData.interval}));
         } else {
             session.endDialog(cancelCommandTmpl.render());
         }
@@ -257,22 +262,22 @@ bot.dialog('/command/firenow', [
         const address = session.message.address;
 
         agenda.jobs({
-            $or: [{name: 'sendNotifications'}, {name: 'repeatNotifications'}],
+            $or: [{name: 'sendReminders'}, {name: 'repeatReminders'}],
             'data.address.user.id': address.user.id,
             'data.address.conversation.id': address.conversation.id,
             'nextRunAt': {$ne: null}
         }, (err, jobs) => {
             if (err) {
-                session.endDialog("Unexpected error, failed to run notifications. Please try again.");
+                session.endDialog("Unexpected error, failed to run Reminders. Please try again.");
             } else {
                 if (jobs.length > 0) {
                     const message = new botBuilder.Message()
                         .address(address)
-                        .text(`Firing ${jobs.length} notifications scheduled for current conversation`);
+                        .text(`Firing ${jobs.length} Reminders scheduled for current conversation`);
                     bot.send(message, (err) => {
                         if (!err) {
                             jobs.forEach((job) => {
-                                agenda.now('sendNotifications', job.attrs.data);
+                                agenda.now('sendReminders', job.attrs.data);
                             });
                         }
                     });
@@ -292,15 +297,15 @@ bot.dialog('/command/update', [
         const address = session.message.address;
 
         agenda.jobs({
-            'name': 'repeatNotifications',
+            'name': 'repeatReminders',
             'data.address.conversation.id': address.conversation.id,
             'data.address.user.id': address.user.id
         }, (err, jobs) => {
             if (err) {
-                session.endDialog("Failed to query your running notifications, please try next time.");
+                session.endDialog("Failed to query your running Reminders, please try next time.");
             } else {
                 if (jobs.length > 0) {
-                    let text = `Please send me back a number of the notification you want to update:${MD.nl()}`;
+                    let text = `Please send me back a number of the Reminder you want to update:\n`;
                     const jobsIds = [];
 
                     jobs.forEach((job, idx) => {
@@ -317,13 +322,13 @@ bot.dialog('/command/update', [
                             content: content
                         });
 
-                        text += MD.nl();
+                        text += "\n";
                     });
                     session.dialogData.jobsIds = jobsIds;
 
                     botBuilder.Prompts.text(session, text);
                 } else {
-                    session.endDialog("You have no repeatable notifications running in this conversation");
+                    session.endDialog("You have no repeatable Reminders running in this conversation");
                 }
             }
         })
@@ -336,11 +341,11 @@ bot.dialog('/command/update', [
             const jobsIds = session.dialogData.jobsIds;
 
             if (isNaN(jobIndex) || jobIndex < 0 || jobIndex > jobsIds.length) {
-                session.endDialog("Notification index you provided is incorrect");
+                session.endDialog("Reminder index you provided is incorrect");
             } else {
                 session.dialogData.jobIndex = jobIndex;
 
-                botBuilder.Prompts.text(session, "Now please enter new content for this notification");
+                botBuilder.Prompts.text(session, "Now please enter new content for this Reminder");
             }
         }
     },
@@ -356,15 +361,15 @@ bot.dialog('/command/update', [
                 'data.jobId': jobsIds[jobIndex]
             }, (err, jobs) => {
                 if (err) {
-                    session.endDialog("Failed to find a notification");
+                    session.endDialog("Failed to find a Reminder");
                 } else {
                     jobs.forEach((job) => {
                         job.attrs.data.content = content;
                         job.save((err) => {
                             if (!err) {
-                                session.endDialog("Notification has been successfully updated");
+                                session.endDialog("Reminder has been successfully updated");
                             } else {
-                                session.endDialog("Failed to update notification, please try again later");
+                                session.endDialog("Failed to update Reminder, please try again later");
                             }
                         });
                     });
@@ -378,15 +383,15 @@ bot.dialog('/command/abort', [
     (session, args, next) => {
         const address = session.message.address;
         agenda.jobs({
-            $or: [{name: 'sendNotifications'}, {name: 'repeatNotifications'}],
+            $or: [{name: 'sendReminders'}, {name: 'repeatReminders'}],
             'data.address.user.id': address.user.id,
             'data.jobId': {$exists: true}
         }, (err, jobs) => {
             if (err) {
-                session.endDialog("Failed to query your running notifications, please try next time.");
+                session.endDialog("Failed to query your running Reminders, please try next time.");
             } else {
                 if (jobs.length > 0) {
-                    let text = `Please send me back a number (or comma separated numbers) of the notification(s) you want to stop:${MD.nl()}`;
+                    let text = `Please send me back a number (or comma separated numbers) of the Reminder(s) you want to stop:\n`;
                     const jobsIds = [];
 
                     jobs.forEach((job, idx) => {
@@ -403,7 +408,7 @@ bot.dialog('/command/abort', [
                             content: content
                         });
 
-                        text += MD.nl();
+                        text += "\n";
                     });
                     session.dialogData.jobsIds = jobsIds;
 
@@ -411,7 +416,7 @@ bot.dialog('/command/abort', [
                 } else {
                     const message = new botBuilder.Message()
                         .address(address)
-                        .text("You have no running notifications");
+                        .text("You have no running Reminders");
                     bot.send(message);
 
                     session.endDialog();
@@ -433,7 +438,7 @@ bot.dialog('/command/abort', [
                 if (isNaN(jobIndex) || jobIndex < 0 || jobIndex > jobsIds.length) {
                     hasErrors = true;
                 } else {
-                    agenda.schedule('now', 'abortOneNotification', {
+                    agenda.schedule('now', 'abortOneReminder', {
                         address: session.message.address,
                         jobId: jobsIds[jobIndex]
                     });
@@ -461,7 +466,7 @@ bot.dialog('/command/abortall', [
         } else if (decision === 'no') {
             session.endDialog("Ok, you've changed your mind (whew)");
         } else if (decision === 'yes') {
-            agenda.schedule('now', 'abortNotifications', {
+            agenda.schedule('now', 'abortReminders', {
                 address: session.message.address,
             });
             session.endDialog();

@@ -6,7 +6,7 @@ const appCfg = require('./config');
 
 mongoose.connect(appCfg.mongo.databaseURL);
 
-module.exports.Contact = mongoose.model('Contact',
+const Contact = mongoose.model('Contact',
 	new Schema({
 		userId: {
 			type: String, 
@@ -17,3 +17,7 @@ module.exports.Contact = mongoose.model('Contact',
 		dateCreated: Date 
 	})
 );
+
+module.exports = {
+	Contact
+};

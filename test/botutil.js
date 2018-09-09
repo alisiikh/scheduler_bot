@@ -1,4 +1,4 @@
-const BotUtil = require('../src/util/botutil');
+const BotUtil = require('../src/botutil');
 const chai = require('chai');
 const expect = chai.expect;
 const assert = chai.assert;

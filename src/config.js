@@ -1,12 +1,12 @@
 'use strict';
 
-const databaseName = "scheduler_bot";
+const dbName = "scheduler_bot";
 
 let databaseURL;
 if (process.env.MONGODB_URL) {
-	databaseURL = `${process.env.MONGODB_URL}${databaseName}`;
+	databaseURL = `${process.env.MONGODB_URL}${dbName}`;
 } else {
-	databaseURL = `mongodb://127.0.0.1:27017/${databaseName}`;
+	databaseURL = `mongodb://127.0.0.1:27017/${dbName}`;
 }
 
 module.exports = {
@@ -21,7 +21,7 @@ module.exports = {
 		dialogVersion: 1.2
 	},
 	mongo: {
-		databaseURL: databaseURL
+		databaseURL
 	},
     agenda: {
 	    processEvery: '30 seconds',

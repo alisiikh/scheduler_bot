@@ -1,9 +1,9 @@
-const Contact = require('./../model').Contact;
+const Contact = require('./model').Contact;
 
 class BotUtil {
 
-    static get COMMAND_NAME_REGEX() {
-        return  /[\/]?(schedule|repeat|abort|abortall|firenow|update)$/i;
+    static get CommandNameRegex() {
+        return /[\/]?(schedule|repeat|abort|abortall|firenow|update)$/i;
     }
 
     static createContactFromMessage(message) {
@@ -35,9 +35,11 @@ class BotUtil {
 
     static parseCommandName(response) {
         if (BotUtil.isBotCommand(response)) {
-            const match = BotUtil.COMMAND_NAME_REGEX.exec(response);
-            if (match.length > 0) {
-                return match[1];
+            const matcher = BotUtil.CommandNameRegex.exec(response);
+            if (matcher.length > 0) {
+                return matcher[1];
+            } else {
+                return null;
             }
         } else {
             return null;
@@ -45,7 +47,7 @@ class BotUtil {
     }
 
     static isBotCommand(response) {
-        return BotUtil.COMMAND_NAME_REGEX.test(response);
+        return BotUtil.CommandNameRegex.test(response);
     }
 
     static isBotMentioned(message) {

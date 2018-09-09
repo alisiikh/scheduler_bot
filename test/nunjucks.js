@@ -1,4 +1,4 @@
-const mdTmplEngine = require('../src/nunjucks').mdTmplEngine;
+const mdTmplEngine = require('../src/nunjucks').md;
 const assert = require('chai').assert;
 const expect = require('chai').expect;
 

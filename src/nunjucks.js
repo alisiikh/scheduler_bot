@@ -1,8 +1,7 @@
-const nlib = require('nunjucks/src/lib');
-const nunjucks = require('nunjucks');
-const moment = require('moment');
+import nunjucks from 'nunjucks';
+import moment from 'moment';
 
-const mdTmplEngine = nunjucks.configure("template/md", {
+const markdown = nunjucks.configure("assets/md", {
     autoescape: false
 }).addFilter('excerpt', function(input, length) {
     if (typeof input !== 'string') {
@@ -36,12 +35,4 @@ const mdTmplEngine = nunjucks.configure("template/md", {
     return result;
 });
 
-const htmlTmplEngine = nunjucks.configure("template/html", {
-    autoescape: true
-});
-
-module.exports = {
-    nunjucks: nunjucks,
-    mdTmplEngine: mdTmplEngine,
-    htmlTmplEngine: htmlTmplEngine
-};
+module.exports = markdown;

@@ -1,0 +1,1 @@
+Reminder is scheduled, will write you in {{interval}}.

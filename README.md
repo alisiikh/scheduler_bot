@@ -1,5 +1,8 @@
 # A Bot developed with Microsoft Bot Framework 3.5.
 
-Bot is able to schedule notifications and allows to manage notifications via chat commands.
+Bot is able to schedule reminders and allows to manage them via chat commands.
 
-Supports Skype and Telegram. Didn't test on other messaging services.
+Target support:
+- Telegram
+- Console
+- WebChat
