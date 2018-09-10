@@ -1,9 +1,8 @@
 'use strict';
 
 import * as botBuilder from 'botbuilder';
-import { bot as botConfig } from './config';
-// import { Contact, UserData } from './model';
-// import botUtil from "./botutil";
+import {bot as botConfig} from './config';
+import {UserData, ConversationData} from './model';
 
 const connector = new botBuilder.ChatConnector({
     appId: botConfig.botAppId,
@@ -14,98 +13,115 @@ const bot = new botBuilder.UniversalBot(connector);
 
 class BotDataStorage {
     constructor() {
-        this.userStore = {};
-        this.conversationStore = {};
+        // TODO: cache to these for faster access
+        this.userDataCache = {};
+        this.convDataCache = {};
     }
 
     getData(context, callback) {
         const data = {};
+
+        let userDataPromise = null;
+        let convDataPromise = null;
+        let privConvDataPromise = null;
+
         if (context.userId) {
+            console.log("User data");
             if (context.persistUserData) {
-                if (this.userStore.hasOwnProperty(context.userId)) {
-                    data.userData = JSON.parse(this.userStore[context.userId]);
-                }
-                else {
-                    data.userData = null;
-                }
+                userDataPromise = UserData.findOne({userId: context.userId}).exec();
+            } else {
+                userDataPromise = Promise.resolve(null);
             }
+
+            console.log("Private conversation data");
             if (context.conversationId) {
                 const key = context.userId + ':' + context.conversationId;
-                if (this.conversationStore.hasOwnProperty(key)) {
-                    data.privateConversationData = JSON.parse(this.conversationStore[key]);
-                }
-                else {
-                    data.privateConversationData = null;
-                }
+                privConvDataPromise = ConversationData.findOne({convId: key}).exec();
+            } else {
+                privConvDataPromise = Promise.resolve(null);
             }
         }
+
+        console.log("Conversation data");
         if (context.persistConversationData && context.conversationId) {
-            if (this.conversationStore.hasOwnProperty(context.conversationId)) {
-                data.conversationData = JSON.parse(this.conversationStore[context.conversationId]);
-            }
-            else {
-                data.conversationData = null;
-            }
+            convDataPromise = ConversationData.findOne({convId: context.conversationId}).exec();
+        } else {
+            convDataPromise = Promise.resolve(null);
         }
-        callback(null, data);
+
+        Promise.all([userDataPromise, privConvDataPromise, convDataPromise]).then((values) => {
+            data.userData = values[0];
+            data.privConvData = values[1];
+            data.convData = values[2];
+
+            console.log(values);
+
+            callback(null, data);
+        });
     }
 
     deleteData(context) {
-        if (context.userId && this.userStore.hasOwnProperty(context.userId)) {
+        if (context.userId) {
             if (context.conversationId) {
-                if (this.conversationStore.hasOwnProperty(context.conversationId)) {
-                    delete this.conversationStore[context.conversationId];
-                }
-            }
-            else {
-                delete this.userStore[context.userId];
-                for (const key in this.conversationStore) {
-                    if (key.indexOf(context.userId + ':') === 0) {
-                        delete this.conversationStore[key];
-                    }
-                }
+                ConversationData.findOneAndDelete({convId: context.conversationId}, this.logOnError);
+            } else {
+                UserData.findOneAndDelete({userId: context.userId}).exec();
+
+                ConversationData.deleteMany({convId: new RegExp("^" + context.userId)}, this.logOnError);
             }
         }
     }
 
     saveData(context, data, callback) {
-        // console.log(data);
-
         if (context.userId) {
-            if (context.persistUserData) {
+            if (context.persistUserData && data.userData) {
                 // save contact
-                // console.log(`Saving contact for user id: ${context.userId}`);
-                //
-                // Contact.findOne({userId: context.userId}).exec((err, contact) => {
-                //     if (!contact) {
-                //         new Contact(data.contact).save((err) => {
-                //             if (err) {
-                //                 console.log(`Failed to save contact, reason: ${err}`);
-                //             } else {
-                //                 const userData = new UserData({contact: contact._id});
-                //                 userData.save((err) => {
-                //                     if (err) {
-                //                         console.log(`Failed to save user data, reason: ${err}`);
-                //                         this.userStore[context.userId] = {};
-                //                     } else {
-                //                         this.userStore[context.userId] = JSON.stringify(userData);
-                //                     }
-                //                 });
-                //             }
-                //         });
-                //     }
-                // });
-                this.userStore[context.userId] = JSON.stringify(data.userData || {});
+                console.log(`Saving user data for user id: ${context.userId}`);
+
+                UserData.findOne({userId: context.userId}, (err, userData) => {
+                    this.logOnError(err);
+
+                    if (!userData) {
+                        let stored = data.userData;
+                        stored.userId = context.userId;
+
+                        console.log(`No user data found for user id: ${context.userId}, storing new.`);
+                        new UserData(data.userData).save(this.logOnError);
+                    } else {
+                        UserData.findOneAndUpdate({userId: context.userId}, data.userData, this.logOnError);
+                    }
+                });
             }
             if (context.conversationId) {
-                const key = context.userId + ':' + context.conversationId;
-                this.conversationStore[key] = JSON.stringify(data.privateConversationData || {});
+                console.log(`Saving private conversation data for user id: ${context.userId}`);
+                this.storeConvData(context.userId + ':' + context.conversationId, data.privateConversationData);
             }
         }
         if (context.persistConversationData && context.conversationId) {
-            this.conversationStore[context.conversationId] = JSON.stringify(data.conversationData || {});
+            console.log(`Saving conversation data for user id: ${context.userId}`);
+            this.storeConvData(context.conversationId, data.conversationData);
         }
+
         callback(null);
+    }
+
+    storeConvData(key, data) {
+        ConversationData.findOne({convId: key}, (err, convData) => {
+            if (!convData) {
+                const stored = data;
+                stored.convId = key;
+
+                new ConversationData(stored).save(this.logOnError);
+            } else {
+                ConversationData.findOneAndUpdate({convId: key}, data, this.logOnError);
+            }
+        });
+    }
+
+    logOnError(err) {
+        if (err) {
+            console.error(err);
+        }
     }
 }
 

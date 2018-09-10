@@ -3,26 +3,22 @@
 // process.env.TZ = 'Europe/Kyiv';
 
 import server from './server';
-import nunjucks from './nunjucks';
+import templateEngine from './nunjucks';
 import hinterval from 'human-interval';
-import cronParser from 'cron-parser';
+import cron from 'cron-parser';
 import uuid from 'node-uuid';
 import { bot as botConfig, server as serverConfig } from './config';
-
-import { Contact } from './model';
 
 import agenda from './agenda';
 import { bot, botBuilder } from './bot';
 
 import botUtil from './botutil';
 
-const intents = new botBuilder.IntentDialog({ intentThreshold: 0.01 });
-
-const jobInfoTmpl = nunjucks.getTemplate('job-info.md');
-const starterTmpl = nunjucks.getTemplate('start-prompt.md');
-const canceledTmpl = nunjucks.getTemplate('cancel-command.md');
-const scheduledTmpl = nunjucks.getTemplate('scheduled.md');
-const abortAllTmpl = nunjucks.getTemplate('abortall-confirmation.md');
+const jobInfoTmpl = templateEngine.getTemplate('job-info.md');
+const starterTmpl = templateEngine.getTemplate('start-prompt.md');
+const canceledTmpl = templateEngine.getTemplate('cancel-command.md');
+const scheduledTmpl = templateEngine.getTemplate('scheduled.md');
+const abortAllTmpl = templateEngine.getTemplate('abortall-confirmation.md');
 
 server.listen(serverConfig.port, serverConfig.address, () => {
     console.log('%s is listening for incoming requests on port %s', server.name, server.url);
@@ -63,31 +59,31 @@ bot.on('conversationUpdate', (message) => {
     }
 });
 
-bot.on('contactRelationUpdate', (message) => {
-    if (message.action === 'add') {
-        const name = message.user ? message.user.name : null;
-        const reply = new botBuilder.Message()
-            .address(message.address)
-            .text(`Hello ${name || 'there'}... Thanks for having me.\nType in 'start' command to start`);
-        bot.send(reply);
-    } else {
-        const userId = message.user.id;
-
-        console.log("Removing user data for user { name: '" + message.user.name + "', id: '" + message.user.id + "' }");
-        Contact.find({userId: userId}).remove().exec();
-    }
-});
+// bot.on('contactRelationUpdate', (message) => {
+//     if (message.action === 'add') {
+//         const name = message.user ? message.user.name : null;
+//         const reply = new botBuilder.Message()
+//             .address(message.address)
+//             .text(`Hello ${name || 'there'}... Thanks for having me.\nType in 'start' command to start`);
+//         bot.send(reply);
+//     } else {
+//         const userId = message.user.id;
+//
+//         console.log("Removing user data for user { name: '" + message.user.name + "', id: '" + message.user.id + "' }");
+//         Contact.find({userId: userId}).remove().exec();
+//     }
+// });
 
 bot.on('typing', (message) => {
     console.log("User { name: '" + message.user.name + "', id: '" + message.user.id + "' } is typing");
 });
 
-bot.on('deleteUserData', (message) => {
-    const userId = message.user.id;
-
-    console.log("Removing user data for user " + message.user.name + ", id: " + message.user.id);
-    Contact.find({userId: userId}).remove().exec();
-});
+// bot.on('deleteUserData', (message) => {
+//     const userId = message.user.id;
+//
+//     console.log("Removing user data for user " + message.user.name + ", id: " + message.user.id);
+//     Contact.find({userId: userId}).remove().exec();
+// });
 
 bot.use(botBuilder.Middleware.dialogVersion({
     version: botConfig.dialogVersion,
@@ -171,7 +167,7 @@ bot.dialog('/command/repeat', [
             let intervalCorrect = !isNaN(hinterval(args.response));
             if (!intervalCorrect) {
                 try {
-                    cronParser.parseExpression(args.response);
+                    cron.parseExpression(args.response);
                     intervalCorrect = true;
                 } catch (e) {
                     console.log(`User typed in incorrect interval which is not cron expression as well: ${args.response}`);

@@ -18,16 +18,16 @@
   "dependencies": {
     "agenda": "^0.9.1",
     "botbuilder": "^3.15.0",
+    "chai": "^3.5.0",
+    "cron-parser": "^2.1.0",
+    "human-interval": "^0.1.6",
+    "mocha": "^2.5.3",
+    "moment": "^2.14.1",
     "mongodb": "^2.2.26",
     "mongoose": "^5.2.13",
-    "human-interval": "^0.1.6",
-    "moment": "^2.14.1",
-    "cron-parser": "^2.1.0",
     "node-uuid": "^1.4.7",
     "nunjucks": "^2.4.2",
-    "restify": "^4.1.1",
-    "mocha": "^2.5.3",
-    "chai": "^3.5.0"
+    "restify": "^4.1.1"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
